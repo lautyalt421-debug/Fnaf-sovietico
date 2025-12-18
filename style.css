@@ -1,0 +1,94 @@
+/* --- RESET BÁSICO --- */
+body, html { margin: 0; padding: 0; background-color: #000; overflow: hidden; font-family: 'Courier New', monospace; user-select: none; }
+.hidden { display: none !important; }
+
+/* --- MENÚ DE INICIO --- */
+#start-screen {
+    position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
+    background: #050505; color: #0f0; display: flex; flex-direction: column;
+    justify-content: center; align-items: center; z-index: 200;
+}
+
+#btn-play {
+    padding: 15px 40px; font-size: 20px; background: #003300; color: #0f0;
+    border: 2px solid #0f0; cursor: pointer; margin-top: 30px; letter-spacing: 2px;
+}
+#btn-play:hover { background: #0f0; color: #000; }
+
+/* Efecto Glitch Texto */
+.glitch { font-size: 40px; position: relative; color: white; }
+
+/* --- JUEGO PRINCIPAL --- */
+#game-container { position: relative; width: 100vw; height: 100vh; }
+
+#office-bg {
+    width: 140vw; height: 100vh;
+    background: url('assets/images/oficina_base.jpg') no-repeat center center;
+    background-size: cover;
+    position: absolute; left: -20vw; /* Centrado para parallax */
+    transition: transform 0.1s linear;
+}
+
+/* Capa de Máscara */
+#mask-overlay {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: radial-gradient(circle, transparent 30%, rgba(0,0,0,0.95) 80%);
+    pointer-events: none; z-index: 50; border: 20px solid #111;
+}
+
+/* --- MONITOR CCTV --- */
+#camera-monitor {
+    position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(0,0,0,0.9); z-index: 100; padding: 20px; box-sizing: border-box;
+}
+
+.monitor-frame {
+    border: 4px solid #444; height: 100%; display: flex; flex-direction: column;
+}
+
+#cam-screen {
+    flex: 1; position: relative; border-bottom: 2px solid #444; overflow: hidden;
+}
+#cam-img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(100%) contrast(1.2); }
+#static-overlay {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: url('assets/images/cams/static.gif'); opacity: 0.1; pointer-events: none;
+}
+#cam-label {
+    position: absolute; top: 10px; left: 10px; color: #fff; background: rgba(0,0,0,0.7); padding: 5px;
+}
+
+#cam-controls {
+    height: 80px; display: flex; gap: 5px; padding: 10px; background: #111; justify-content: center;
+}
+.cam-btn { background: #222; color: white; border: 1px solid #555; width: 15%; font-size: 12px; }
+.cam-btn.active { background: #005500; border-color: #0f0; }
+
+/* --- UI CONTROLES --- */
+#ui-layer button {
+    position: absolute; padding: 15px; font-weight: bold; background: rgba(0,0,0,0.6);
+    color: white; border: 2px solid white; z-index: 60;
+}
+#btn-mask { bottom: 20px; left: 20px; }
+.right-controls { position: absolute; bottom: 20px; right: 20px; display: flex; gap: 10px; flex-direction: column; }
+#radio-panel {
+    position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+    background: #222; padding: 10px; border: 1px solid #555; z-index: 60; color: white; text-align: center;
+}
+#radio-dial { width: 200px; }
+
+/* --- EFECTOS ESPECIALES --- */
+/* Alarma Roja Boss Fight */
+.alarm-mode { animation: redFlash 1s infinite; }
+@keyframes redFlash {
+    0% { filter: none; }
+    50% { filter: sepia(1) hue-rotate(-50deg) saturate(3) brightness(0.6); }
+    100% { filter: none; }
+}
+
+/* Jumpscare */
+#jumpscare-screen {
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    background: black; z-index: 999; display: flex; justify-content: center; align-items: center;
+}
+#jumpscare-img { width: 100%; height: 100%; object-fit: cover; }
