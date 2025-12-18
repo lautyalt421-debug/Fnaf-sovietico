@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" href="style.css">
+    <title>Operación Sombra</title>
+</head>
+<body>
+    <div id="game-container">
+        <div id="office-bg"></div>
+        <div id="enemy-layer"></div> <div id="mask-overlay" class="hidden"></div>
+
+        <div id="camera-monitor" class="hidden">
+            <div id="cam-view">
+                <img id="cam-img" src="assets/images/cams/cctv1_muelle.jpg">
+                <div id="cam-label">CCTV-1: MUELLE</div>
+                <div class="scanline"></div>
+            </div>
+            <div id="cam-nav">
+                <button onclick="changeCam(1)">CAM 1</button>
+                <button onclick="changeCam(2)">CAM 2</button>
+                <button onclick="changeCam(3)">CAM 3</button>
+                <button onclick="changeCam(4)">CAM 4</button>
+                <button onclick="changeCam(5)">CAM 5</button>
+                <button id="btn-close-cam">BAJAR MONITOR</button>
+            </div>
+        </div>
+
+        <div id="ui-layer">
+            <button id="btn-mask">MÁSCARA</button>
+            <div id="radio-hub">
+                <div id="signal-text">RADIO: OK</div>
+                <input type="range" id="radio-dial" min="0" max="100">
+            </div>
+            <button id="btn-door">CERRAR PUERTA</button>
+            <button id="btn-emp" class="hidden">EMP (BOSS)</button>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
