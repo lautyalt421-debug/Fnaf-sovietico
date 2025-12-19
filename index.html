@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>OPERACIÓN SOMBRA</title>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -11,27 +11,30 @@
     <div id="start-screen">
         <h1 class="glitch">OPERACIÓN SOMBRA</h1>
         <div id="night-menu"></div>
-        <button id="btn-reset">RESETEAR PROGRESO</button>
+        <button id="btn-reset">REINICIAR PROGRESO</button>
     </div>
 
     <div id="game-container" class="hidden">
         <div id="top-bar">
             <div id="clock">12:00 AM</div>
             <div id="power-info">
-                <div>USO: <span id="usage-visual">[I]</span></div>
-                <div style="color: #0f0; font-weight: bold;">BAT: <span id="power-num">100</span>%</div>
+                <span>USO: <span id="usage-visual">I</span></span>
+                <span id="power-num">100</span>%
             </div>
         </div>
 
         <div id="office-bg"></div>
         <div id="mask-overlay" class="hidden"></div>
-        <div id="oxygen-alert" class="hidden"><p>⚠️ FALLO DE OXÍGENO ⚠️</p></div>
+        <div id="oxygen-alert" class="hidden">⚠️ FALLO DE OXÍGENO ⚠️</div>
 
         <div id="camera-monitor" class="hidden">
             <div id="cam-viewport">
                 <img id="cam-img" src="">
                 <div id="static-layer"></div>
-                <div id="cam-label">SISTEMA CCTV</div>
+                <div id="molot-minigame" class="hidden">
+                    <p>SISTEMA COMPROMETIDO: REINICIE NODOS</p>
+                    <div id="node-container"></div>
+                </div>
             </div>
             <div id="cam-controls">
                 <div class="cam-grid">
@@ -46,22 +49,21 @@
         </div>
 
         <div id="ui-panel">
-            <button id="btn-mask">🎭 MÁSCARA</button>
-            <button id="btn-monitor">🖥️ CÁMARAS</button>
-            <button id="btn-door">🚪 PUERTA</button>
+            <div class="ui-btn-wrapper"><button id="btn-mask">🎭 MÁSCARA</button></div>
+            <div class="ui-btn-wrapper"><button id="btn-monitor">🖥️ CÁMARAS</button></div>
+            <div class="ui-btn-wrapper"><button id="btn-door">🚪 PUERTA</button></div>
         </div>
     </div>
 
     <div id="jumpscare-container" class="hidden"><img id="jumpscare-img" src=""></div>
-
-    <div id="game-over-screen" class="hidden">
-        <h2 id="death-reason">SISTEMA CORRUPTO</h2>
-        <button id="btn-retry">REINTENTAR</button>
+    <div id="death-screen" class="hidden">
+        <h2 style="color:red">CONEXIÓN PERDIDA</h2>
+        <button onclick="location.reload()">REINTENTAR</button>
     </div>
-
     <div id="win-screen" class="hidden">
-        <h2 style="color: #0f0;">¡GANASTE!</h2>
-        <button id="btn-next">VOLVER</button>
+        <h2 style="color:#0f0">6:00 AM</h2>
+        <p>HAS SOBREVIVIDO A LA SOMBRA</p>
+        <button onclick="location.reload()">CONTINUAR</button>
     </div>
 
     <script src="script.js"></script>
