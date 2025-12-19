@@ -16,21 +16,60 @@ const sounds = {
 };
 sounds.ambient.loop = true; sounds.breath.loop = true;
 
-document.addEventListener('DOMContentLoaded', loadMenu);
+// CARGA INICIAL
+window.onload = () => {
+    loadMenu();
+    document.getElementById('btn-reset').onclick = resetProgress;
+};
 
-// ASIGNACIÓN MANUAL DE EVENTOS PARA EVITAR BUGS DE BLOQUEO
-function setupButtons() {
+function loadMenu() {
+    const menu = document.getElementById('night-menu');
+    menu.innerHTML = "";
+    const unlocked = parseInt(localStorage.getItem('sombra_night') || 1);
+    for (let i = 1; i <= 6; i++) {
+        let btn = document.createElement('button');
+        btn.innerText = i === 5 ? "MOLOT" : "NOCHE " + i;
+        if (i > unlocked) btn.className = 'locked';
+        else btn.onclick = () => startGame(i);
+        menu.appendChild(btn);
+    }
+}
+
+function startGame(n) {
+    GAME.active = true; GAME.night = n; GAME.power = 100; GAME.hour = 0;
+    GAME.maskOn = false; GAME.doorClosed = false; GAME.camOpen = false;
+
+    document.getElementById('start-screen').classList.add('hidden');
+    document.getElementById('game-container').classList.remove('hidden');
+    
+    // ASIGNAR BOTONES DE LA OFICINA
     document.getElementById('btn-mask').onclick = toggleMask;
     document.getElementById('btn-door').onclick = toggleDoor;
     document.getElementById('btn-monitor').onclick = toggleMonitor;
+    document.getElementById('btn-cam-close').onclick = toggleMonitor;
+    document.getElementById('btn-retry').onclick = () => location.reload();
+    document.getElementById('btn-next').onclick = () => location.reload();
+
+    // BOTONES DE CÁMARAS
+    document.querySelectorAll('.cam-btn').forEach(btn => {
+        btn.onclick = () => changeCam(parseInt(btn.getAttribute('data-cam')));
+    });
+
+    document.getElementById('office-bg').style.backgroundImage = `url('${IMG_PATH}${n===5?"oficina_rota.jpg":"oficina_base.jpg"}')`;
+    
+    window.gameIntervals = [
+        setInterval(tickClock, 45000),
+        setInterval(updatePower, 1000),
+        setInterval(moveBots, 6000)
+    ];
+    sounds.ambient.play();
 }
 
 function toggleDoor() {
     if(!GAME.active || GAME.maskOn) return; 
     GAME.doorClosed = !GAME.doorClosed;
     sounds.door.play();
-    const office = document.getElementById('office-bg');
-    office.style.backgroundImage = GAME.doorClosed ? `url('${IMG_PATH}oficina_cerrada.jpg')` : `url('${IMG_PATH}${GAME.night === 5 ? "oficina_rota.jpg" : "oficina_base.jpg"}')`;
+    document.getElementById('office-bg').style.backgroundImage = GAME.doorClosed ? `url('${IMG_PATH}oficina_cerrada.jpg')` : `url('${IMG_PATH}${GAME.night === 5 ? "oficina_rota.jpg" : "oficina_base.jpg"}')`;
     document.getElementById('btn-door').classList.toggle('active-btn');
 }
 
@@ -46,13 +85,11 @@ function toggleMask() {
         if(GAME.camOpen) toggleMonitor(); 
         maskOverlay.classList.remove('hidden');
         sounds.breath.play();
-        // BLOQUEAMOS TODO EXCEPTO EL BOTÓN DE LA MÁSCARA
         btnMonitor.classList.add('controls-disabled');
         btnDoor.classList.add('controls-disabled');
     } else {
         maskOverlay.classList.add('hidden');
         sounds.breath.pause();
-        // DESBLOQUEAMOS
         btnMonitor.classList.remove('controls-disabled');
         btnDoor.classList.remove('controls-disabled');
     }
@@ -82,19 +119,32 @@ function updatePower() {
     if(!GAME.active) return;
     let usage = 1 + (GAME.doorClosed?1:0) + (GAME.camOpen?1:0) + (GAME.maskOn?1:0);
     document.getElementById('usage-visual').innerText = "[I]".repeat(usage);
-    GAME.power -= (0.06 * Math.pow(usage, 1.4)); 
+    GAME.power -= (0.07 * usage); 
     document.getElementById('power-num').innerText = Math.max(0, Math.floor(GAME.power));
     document.getElementById('power-fill').style.width = GAME.power + "%";
     if(GAME.power <= 0) triggerJumpscare("svyaz");
 }
 
+function tickClock() {
+    GAME.hour++;
+    document.getElementById('clock').innerText = GAME.hour + ":00 AM";
+    if(GAME.hour === 6) {
+        GAME.active = false;
+        window.gameIntervals.forEach(clearInterval);
+        localStorage.setItem('sombra_night', GAME.night + 1);
+        document.getElementById('win-screen').classList.remove('hidden');
+    }
+}
+
 function moveBots() {
     if(!GAME.active) return;
     for(let b in BOTS) {
-        if(BOTS[b].active && Math.random() > 0.4) {
-            let idx = BOTS[b].path.indexOf(BOTS[b].pos);
-            if(idx < BOTS[b].path.length - 1) BOTS[b].pos = BOTS[b].path[idx + 1];
-            if(BOTS[b].pos === 100) checkAttack(b);
+        if((b === 'stalnoy' && GAME.night >= 1) || (b === 'prizrak' && GAME.night >= 2) || (b === 'svyaz' && GAME.night >= 3 && GAME.night !== 5)) {
+            if(Math.random() > 0.4) {
+                let idx = BOTS[b].path.indexOf(BOTS[b].pos);
+                if(idx < BOTS[b].path.length - 1) BOTS[b].pos = BOTS[b].path[idx + 1];
+                if(BOTS[b].pos === 100) checkAttack(b);
+            }
         }
     }
 }
@@ -107,14 +157,12 @@ function checkAttack(name) {
 }
 
 function startOxygenFailure() {
-    const alertBox = document.getElementById('oxygen-alert');
-    alertBox.classList.remove('hidden');
+    document.getElementById('oxygen-alert').classList.remove('hidden');
     setTimeout(() => {
-        if(!GAME.maskOn) {
-            triggerJumpscare('prizrak');
-        } else {
+        if(!GAME.maskOn) triggerJumpscare('prizrak');
+        else {
             setTimeout(() => {
-                alertBox.classList.add('hidden');
+                document.getElementById('oxygen-alert').classList.add('hidden');
                 BOTS.prizrak.pos = 1;
             }, 4000);
         }
@@ -125,48 +173,13 @@ function triggerJumpscare(botName) {
     GAME.active = false;
     window.gameIntervals.forEach(clearInterval);
     sounds.ambient.pause(); sounds.breath.pause(); sounds.scare.play();
-    const container = document.getElementById('jumpscare-container');
-    document.getElementById('jumpscare-img').src = SPRITE_PATH + BOTS[botName].gif + "?t=" + new Date().getTime();
-    container.classList.remove('hidden');
+    document.getElementById('jumpscare-img').src = SPRITE_PATH + BOTS[botName].gif + "?t=" + Date.now();
+    document.getElementById('jumpscare-container').classList.remove('hidden');
     setTimeout(() => {
-        container.classList.add('hidden');
+        document.getElementById('jumpscare-container').classList.add('hidden');
         document.getElementById('death-reason').innerText = botName.toUpperCase() + " TE ATRAPÓ";
         document.getElementById('game-over-screen').classList.remove('hidden');
     }, 1800);
 }
 
-function startGame(n) {
-    GAME.active = true; GAME.night = n; GAME.power = 100; GAME.hour = 0;
-    BOTS.stalnoy.active = n >= 1; BOTS.prizrak.active = n >= 2; BOTS.svyaz.active = (n >= 3 && n !== 5);
-    document.getElementById('start-screen').classList.add('hidden');
-    document.getElementById('game-container').classList.remove('hidden');
-    document.getElementById('office-bg').style.backgroundImage = `url('${IMG_PATH}${n===5?"oficina_rota.jpg":"oficina_base.jpg"}')`;
-    setupButtons(); // Inicializar clics
-    window.gameIntervals = [
-        setInterval(() => {
-            GAME.hour++; document.getElementById('clock').innerText = GAME.hour + ":00 AM";
-            if(GAME.hour === 6) {
-                GAME.active = false; window.gameIntervals.forEach(clearInterval);
-                localStorage.setItem('sombra_night', n+1);
-                document.getElementById('win-screen').classList.remove('hidden');
-            }
-        }, 45000),
-        setInterval(updatePower, 1000), setInterval(moveBots, 6000)
-    ];
-    sounds.ambient.play();
-}
-
-function retryNight() { location.reload(); }
-function loadMenu() {
-    const menu = document.getElementById('night-menu');
-    const unlocked = parseInt(localStorage.getItem('sombra_night') || 1);
-    menu.innerHTML = "";
-    for (let i = 1; i <= 6; i++) {
-        let btn = document.createElement('button');
-        btn.innerText = i===5?"MOLOT":"NOCHE "+i;
-        if (i > unlocked) btn.className = 'locked';
-        btn.onclick = () => startGame(i);
-        menu.appendChild(btn);
-    }
-}
 function resetProgress() { localStorage.clear(); location.reload(); }
