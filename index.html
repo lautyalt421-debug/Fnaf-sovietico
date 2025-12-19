@@ -3,24 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SISTEMA SOMBRA V4</title>
+    <title>SISTEMA SOMBRA</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div id="start-screen">
         <div class="terminal">
             <h1 class="glitch">OPERACIÓN SOMBRA</h1>
-            <p>SISTEMA DE VIGILANCIA BÚNKER</p>
-            <button onclick="game.start()">CONECTAR SISTEMA</button>
+            <div class="night-menu">
+                <button onclick="game.start(1)">OPERACIÓN 1</button>
+                <button onclick="game.start(2)">OPERACIÓN 2</button>
+                <button onclick="game.start(3)">OPERACIÓN 3</button>
+                <button onclick="game.start(4)">OPERACIÓN 4</button>
+                <button onclick="game.start(5)">OPERACIÓN 5</button>
+            </div>
+            <p style="margin-top:20px; color:#555;">SISTEMA DE VIGILANCIA V4.5</p>
         </div>
     </div>
 
     <div id="game-ui" class="hidden">
         <div id="scanlines"></div>
-        
         <div id="top-bar">
-            <div>HORA: <span id="clock">12:00 AM</span></div>
-            <div>BATERÍA: <span id="power">100%</span></div>
+            <span>HORA: <b id="clock">12:00 AM</b></span>
+            <span>BATERÍA: <b id="power">100%</b></span>
         </div>
 
         <div id="main-viewport">
@@ -34,7 +39,7 @@
                     <span id="cam-label">CAM 01 - MUELLE</span>
                     <span class="rec">● REC</span>
                 </div>
-                <img id="cam-img" src="" onerror="this.style.opacity='0'">
+                <img id="cam-img" src="">
             </div>
             <div id="cam-grid">
                 <button onclick="game.switchCam(1)">C1</button>
@@ -42,7 +47,7 @@
                 <button onclick="game.switchCam(3)">C3</button>
                 <button onclick="game.switchCam(4)">C4</button>
                 <button onclick="game.switchCam(5)">C5</button>
-                <button id="btn-close" onclick="game.toggleMonitor()">CERRAR</button>
+                <button id="btn-close" onclick="game.toggleMonitor()">VOLVER</button>
             </div>
         </div>
 
@@ -53,10 +58,7 @@
         </div>
     </div>
 
-    <div id="jumpscare-layer" class="hidden">
-        <img id="scare-img" src="">
-    </div>
-
+    <div id="jumpscare-layer" class="hidden"><img id="scare-img" src=""></div>
     <script src="script.js"></script>
 </body>
 </html>
