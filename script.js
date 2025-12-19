@@ -1,39 +1,97 @@
-#office-bg {
-    width: 140vw; height: 100vh;
-    background: url('assets/images/oficina_base.jpg') center/cover;
-    position: absolute; left: -20vw;
-}
+let STATE = {
+    night: 1, hour: 0, power: 100,
+    active: false, door: false, mask: false, cam: false,
+    radioVal: 50, radioTarget: 50, bossMode: false
+};
 
-/* Efecto de Estática en Cámaras */
-.noise-effect {
-    position: absolute; inset: 0;
-    background: url('assets/images/cams/static.gif');
-    opacity: 0.1; pointer-events: none;
-}
+const BOTS = {
+    stalnoy: { pos: 1, path: [1, 2, 4, 100] },
+    prizrak: { pos: 1, path: [1, 3, 100] },
+    svyaz: { pos: 1, path: [1, 5, 100] }
+};
 
-/* Barra de Energía */
-#power-bar { width: 100px; height: 10px; border: 1px solid #0f0; background: #222; }
-#power-fill { height: 100%; background: #0f0; width: 100%; transition: 0.3s; }
+const camFiles = { 1: "muelle", 2: "pasillo", 3: "calderas", 4: "patio", 5: "nodo" };
 
-/* Luz de Radio (Feedback) */
-#radio-indicator { width: 15px; height: 15px; border-radius: 50%; background: red; margin: 5px auto; box-shadow: 0 0 10px red; }
-
-/* Animación Alarma Boss Fight */
-.boss-alarm { animation: pulseRed 0.5s infinite; }
-@keyframes pulseRed { 0% { background: #000; } 50% { background: #400; } }
-    GAME.currentCam = id;
-    const camImg = document.getElementById('cam-img');
-    const label = document.getElementById('cam-label');
+function startGame(n) {
+    STATE.night = n;
+    STATE.active = true;
+    document.getElementById('start-screen').classList.add('hidden');
+    document.getElementById('game-container').classList.remove('hidden');
     
-    let base = mapaCamaras[id];
-    let botVisible = "";
+    // Iniciar Sistemas
+    setInterval(tickClock, 60000); // 1 hora cada 60 seg
+    setInterval(updatePower, 1500); // Consumo de luz
+    setInterval(aiMove, 5000 - (n * 500)); // IA se acelera cada noche
+    
+    if (n === 5) setTimeout(triggerBoss, 20000); // El Tanque aparece a los 20 seg
+}
 
-    // Revisar si algún bot está en esta cámara
+function tickClock() {
+    if (!STATE.active) return;
+    STATE.hour++;
+    document.getElementById('clock').innerText = `${STATE.hour} AM`;
+    if (STATE.hour === 6) alert("¡SOBREVIVISTE!");
+}
+
+function updatePower() {
+    if (!STATE.active) return;
+    let cost = 0.1;
+    if (STATE.door) cost += 0.4;
+    if (STATE.cam) cost += 0.3;
+    
+    STATE.power -= cost;
+    document.getElementById('power-num').innerText = Math.floor(STATE.power);
+    document.getElementById('power-fill').style.width = STATE.power + "%";
+    
+    if (STATE.power <= 0) die("Energía agotada");
+}
+
+function aiMove() {
+    if (!STATE.active || STATE.bossMode) return;
     for (let b in BOTS) {
-        if (BOTS[b].pos === id) botVisible = "_" + b;
+        if (Math.random() > 0.5) {
+            let bot = BOTS[b];
+            let idx = bot.path.indexOf(bot.pos);
+            if (idx < bot.path.length - 1) bot.pos = bot.path[idx + 1];
+            else attack(b);
+        }
     }
+}
 
-    // Busca: muelle.jpg o muelle_stalnoy.jpg
+function attack(name) {
+    if (name === 'stalnoy' && !STATE.door) die('stalnoy');
+    if (name === 'prizrak' && !STATE.mask) die('prizrak');
+    // Si la puerta está cerrada, Stalnoy vuelve a la cámara 1
+    if (name === 'stalnoy' && STATE.door) BOTS.stalnoy.pos = 1;
+}
+
+function triggerBoss() {
+    STATE.bossMode = true;
+    // Secuencia de Boss: Pasos -> Vidrio Roto -> Alarma -> Tanque
+    document.getElementById('office-bg').style.backgroundImage = "url('assets/images/oficina_rota.jpg')";
+    document.getElementById('game-container').classList.add('boss-alarm');
+    document.getElementById('enemy-layer').innerHTML = '<img src="assets/images/sprites/tanque_boss.png" style="width:70%;">';
+    document.getElementById('btn-emp').classList.remove('hidden');
+}
+
+function die(bot) {
+    STATE.active = false;
+    const js = document.getElementById('jumpscare-screen');
+    js.classList.remove('hidden');
+    document.getElementById('jumpscare-img').src = `assets/images/sprites/${bot}_scare.gif`;
+    setTimeout(() => location.reload(), 3000);
+}
+
+// Controles de botones
+document.getElementById('btn-door').onclick = () => {
+    STATE.door = !STATE.door;
+    document.getElementById('btn-door').innerText = STATE.door ? "PUERTA: OFF" : "PUERTA: ON";
+};
+
+document.getElementById('btn-mask').onclick = () => {
+    STATE.mask = !STATE.mask;
+    document.getElementById('mask-overlay').classList.toggle('hidden');
+};
     camImg.src = `assets/images/cams/${base}${botVisible}.jpg`;
     label.innerText = `CCTV: ${base.toUpperCase()}`;
 
