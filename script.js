@@ -24,12 +24,15 @@ function loadMenu() {
 }
 
 function startGame(n) {
-    GAME = { active: true, hour: 0, power: 100, camOpen: false, doorClosed: false, maskOn: false, currentCam: 1, night: n, molot: false, nodes: 0 };
+    GAME = { active: true, hour: 0, power: 100, camOpen: false, doorClosed: false, maskOn: false, currentCam: 1, night: n };
     for(let b in BOTS) BOTS[b].pos = 1;
     document.getElementById('start-screen').classList.add('hidden');
     document.getElementById('game-container').classList.remove('hidden');
+    
+    document.getElementById('snd-office').play();
     setupEvents();
     updateOffice();
+    
     window.gameIntervals = [
         setInterval(tickClock, 45000),
         setInterval(updatePower, 1000),
@@ -37,48 +40,55 @@ function startGame(n) {
     ];
 }
 
-function updatePower() {
-    if(!GAME.active) return;
-    let usage = 1 + (GAME.doorClosed?1:0) + (GAME.camOpen?1:0) + (GAME.maskOn?1:0);
-    GAME.power -= (0.12 * usage);
-
-    // EFECTO PARPADEO: Si la energía es menor a 20%, las luces fallan aleatoriamente
-    if (GAME.power < 20 && Math.random() > 0.8) {
-        document.getElementById('office-bg').style.filter = "brightness(0.1)";
-        setTimeout(() => { document.getElementById('office-bg').style.filter = "brightness(1)"; }, 100);
-    }
-
-    document.getElementById('power-num').innerText = Math.max(0, Math.floor(GAME.power));
-    document.getElementById('usage-visual').innerText = "I".repeat(usage);
-    if(GAME.power <= 0) triggerJumpscare('svyaz');
-}
-
 function moveBots() {
     if(!GAME.active) return;
-    let diff = (GAME.night >= 4) ? 0.75 : 0.45;
+    let diff = (GAME.night >= 4) ? 0.7 : 0.4;
 
     for(let b in BOTS) {
-        if (b === 'prizrak' && GAME.night < 2) continue; 
-        if (b === 'svyaz' && GAME.night < 3) continue;   
-        if (b === 'molot' && GAME.night < 5) continue;   
-        if (GAME.night === 5 && (b === 'prizrak' || b === 'svyaz')) continue; 
+        if (b === 'prizrak' && GAME.night < 2) continue;
+        if (b === 'svyaz' && GAME.night < 3) continue;
+        if (b === 'molot' && GAME.night < 5) continue;
+        if (GAME.night === 5 && (b === 'prizrak' || b === 'svyaz')) continue;
 
         if(Math.random() < diff) {
+            let oldPos = BOTS[b].pos;
             if(b === 'molot') { if(GAME.camOpen && !GAME.molot) startMolot(); continue; }
-            let idx = BOTS[b].path.indexOf(BOTS[b].pos);
-            if(idx < BOTS[b].path.length - 1) BOTS[b].pos = BOTS[b].path[idx+1];
+            
+            let idx = BOTS[b].path.indexOf(oldPos);
+            if(idx < BOTS[b].path.length - 1) {
+                BOTS[b].pos = BOTS[b].path[idx+1];
+                // EFECTO DE ESTÁTICA SI SE MUEVE CERCA DE TU VISTA
+                if (GAME.camOpen && (oldPos === GAME.currentCam || BOTS[b].pos === GAME.currentCam)) {
+                    triggerStatic();
+                }
+            }
             if(BOTS[b].pos === 100) checkAttack(b);
         }
     }
+}
+
+function triggerStatic() {
+    const layer = document.getElementById('static-layer');
+    const snd = document.getElementById('snd-static');
+    layer.classList.add('active-static');
+    snd.play();
+    setTimeout(() => {
+        changeCam(GAME.currentCam);
+        setTimeout(() => { 
+            layer.classList.remove('active-static'); 
+            if(!GAME.camOpen) snd.pause();
+        }, 400);
+    }, 100);
 }
 
 function changeCam(id) {
     GAME.currentCam = id;
     let bot = "";
     for(let b in BOTS) { if(BOTS[b].pos === id && b !== 'molot') bot = "_" + b; }
-    document.getElementById('static-layer').style.opacity = bot ? "0.85" : "0.2";
-    const cams = {1:"muelle", 2:"pasillo", 3:"calderas", 4:"patio", 5:"nodo"};
-    document.getElementById('cam-img').src = `${IMG_PATH}${cams[id]}${bot}.jpg`;
+    
+    const names = {1:"muelle", 2:"pasillo", 3:"calderas", 4:"patio", 5:"nodo"};
+    document.getElementById('cam-img').src = `${IMG_PATH}${names[id]}${bot}.jpg`;
+    document.getElementById('cam-label').innerText = `CAM ${id} - ${names[id].toUpperCase()}`;
 }
 
 function checkAttack(name) {
@@ -94,38 +104,58 @@ function checkAttack(name) {
     else BOTS[name].pos = 1;
 }
 
-function startMolot() {
-    GAME.molot = true; GAME.nodes = 0;
-    const ui = document.getElementById('molot-minigame');
-    const cont = document.getElementById('node-container');
-    ui.classList.remove('hidden'); cont.innerHTML = "";
-    for(let i=1; i<=4; i++) {
-        let n = document.createElement('div'); n.className = 'node'; n.innerText = i;
-        n.style.left = Math.random()*80+"%"; n.style.top = Math.random()*80+"%";
-        n.onclick = () => { if(i === GAME.nodes + 1) { GAME.nodes++; n.classList.add('hit'); if(GAME.nodes === 4) { GAME.molot = false; ui.classList.add('hidden'); } } };
-        cont.appendChild(n);
+function updatePower() {
+    if(!GAME.active) return;
+    let usage = 1 + (GAME.doorClosed?1:0) + (GAME.camOpen?1:0) + (GAME.maskOn?1:0);
+    GAME.power -= (0.12 * usage);
+    
+    if (GAME.power < 20 && Math.random() > 0.8) {
+        document.getElementById('office-bg').style.filter = "brightness(0.2)";
+        setTimeout(() => document.getElementById('office-bg').style.filter = "brightness(1)", 100);
     }
-    setTimeout(() => { if(GAME.molot) triggerJumpscare('molot'); }, 6000);
+
+    document.getElementById('power-num').innerText = Math.max(0, Math.floor(GAME.power));
+    document.getElementById('usage-visual').innerText = "I".repeat(usage);
+    if(GAME.power <= 0) triggerJumpscare('svyaz');
 }
 
 function setupEvents() {
-    const click = (id, fn) => {
-        const el = document.getElementById(id);
-        el.onclick = fn;
-        el.ontouchstart = (e) => { e.preventDefault(); fn(); };
+    const btnMask = document.getElementById('btn-mask');
+    const btnDoor = document.getElementById('btn-door');
+    const btnMon = document.getElementById('btn-monitor');
+
+    btnMask.onclick = () => { 
+        if(GAME.camOpen) return;
+        GAME.maskOn = !GAME.maskOn;
+        btnMask.classList.toggle('active-btn');
+        document.getElementById('mask-overlay').classList.toggle('hidden');
     };
-    click('btn-mask', () => { if(!GAME.camOpen) { GAME.maskOn = !GAME.maskOn; document.getElementById('mask-overlay').classList.toggle('hidden'); document.getElementById('btn-mask').classList.toggle('active-btn'); } });
-    click('btn-door', () => { if(!GAME.maskOn) { GAME.doorClosed = !GAME.doorClosed; updateOffice(); document.getElementById('btn-door').classList.toggle('active-btn'); } });
-    click('btn-monitor', toggleMonitor);
-    click('btn-cam-close', toggleMonitor);
-    document.querySelectorAll('.cam-btn').forEach(b => { b.onclick = () => changeCam(parseInt(b.dataset.cam)); });
+
+    btnDoor.onclick = () => {
+        GAME.doorClosed = !GAME.doorClosed;
+        btnDoor.classList.toggle('active-btn');
+        updateOffice();
+    };
+
+    btnMon.onclick = toggleMonitor;
+    document.getElementById('btn-cam-close').onclick = toggleMonitor;
+    
+    document.querySelectorAll('.cam-btn').forEach(b => {
+        b.onclick = () => { triggerStatic(); };
+    });
 }
 
 function toggleMonitor() {
-    if(!GAME.active || (GAME.maskOn && !GAME.camOpen) || GAME.molot) return;
     GAME.camOpen = !GAME.camOpen;
     document.getElementById('camera-monitor').classList.toggle('hidden');
-    if(GAME.camOpen) changeCam(GAME.currentCam);
+    const snd = document.getElementById('snd-static');
+    if(GAME.camOpen) {
+        changeCam(GAME.currentCam);
+        snd.play();
+        snd.volume = 0.2;
+    } else {
+        snd.pause();
+    }
 }
 
 function updateOffice() {
@@ -134,17 +164,22 @@ function updateOffice() {
     document.getElementById('office-bg').style.backgroundImage = `url('${IMG_PATH}${img}')`;
 }
 
-function triggerJumpscare(bot) {
-    if(!GAME.active) return;
-    GAME.active = false;
-    window.gameIntervals.forEach(clearInterval);
-    document.getElementById('jumpscare-img').src = `assets/sprites/${BOTS[bot].gif}?t=${Date.now()}`;
-    document.getElementById('jumpscare-container').classList.remove('hidden');
-    setTimeout(() => location.reload(), 2000);
-}
-
 function tickClock() {
     GAME.hour++;
     document.getElementById('clock').innerText = (GAME.hour === 0 ? "12" : GAME.hour) + ":00 AM";
-    if(GAME.hour === 6) { localStorage.setItem('sombra_night', GAME.night + 1); location.reload(); }
+    if(GAME.hour === 6) { 
+        localStorage.setItem('sombra_night', GAME.night + 1); 
+        alert("TURNO FINALIZADO");
+        location.reload(); 
+    }
+}
+
+function triggerJumpscare(bot) {
+    GAME.active = false;
+    window.gameIntervals.forEach(clearInterval);
+    const container = document.getElementById('jumpscare-container');
+    const img = document.getElementById('jumpscare-img');
+    img.src = `assets/sprites/${BOTS[bot].gif}`;
+    container.classList.remove('hidden');
+    setTimeout(() => location.reload(), 2000);
 }
