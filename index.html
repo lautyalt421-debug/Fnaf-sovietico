@@ -3,87 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>OPERACIÓN SOMBRA</title>
+    <title>OPERACIÓN SOMBRA: EL BÚNKER</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <div id="start-screen">
         <h1 class="glitch" data-text="OPERACIÓN SOMBRA">OPERACIÓN SOMBRA</h1>
-        <button id="btn-play" onclick="startGame()">INICIAR NOCHE 5</button>
+        <div class="menu-buttons">
+            <button onclick="startGame(1)">NOCHE 1 (FÁCIL)</button>
+            <button onclick="startGame(5)" class="btn-boss">NOCHE 5 (BOSS)</button>
+        </div>
     </div>
 
     <div id="game-container" class="hidden">
+        
+        <div id="top-bar">
+            <div id="clock">12:00 AM</div>
+            <div id="power-box">
+                ENERGÍA: <span id="power-num">100</span>%
+                <div id="power-bar"><div id="power-fill"></div></div>
+            </div>
+        </div>
+
         <div id="office-bg"></div>
         <div id="enemy-layer"></div>
         <div id="mask-overlay" class="hidden"></div>
 
         <div id="camera-monitor" class="hidden">
-            <div id="cam-screen">
+            <div id="cam-display">
                 <img id="cam-img" src="assets/images/cams/muelle.jpg">
-                <div id="static-overlay"></div>
-                <div id="cam-label">CCTV: MUELLE</div>
+                <div class="noise-effect"></div>
+                <div id="cam-name">CCTV: MUELLE</div>
             </div>
-            <div id="cam-nav">
-                <button id="btn-cam-1" class="cam-btn" onclick="changeCam(1)">1</button>
-                <button id="btn-cam-2" class="cam-btn" onclick="changeCam(2)">2</button>
-                <button id="btn-cam-3" class="cam-btn" onclick="changeCam(3)">3</button>
-                <button id="btn-cam-4" class="cam-btn" onclick="changeCam(4)">4</button>
-                <button id="btn-cam-5" class="cam-btn" onclick="changeCam(5)">5</button>
-                <button onclick="toggleMonitor()">BAJAR</button>
+            <div id="cam-buttons">
+                <button class="c-btn" onclick="changeCam(1)">1</button>
+                <button class="c-btn" onclick="changeCam(2)">2</button>
+                <button class="c-btn" onclick="changeCam(3)">3</button>
+                <button class="c-btn" onclick="changeCam(4)">4</button>
+                <button class="c-btn" onclick="changeCam(5)">5</button>
+                <button id="btn-close" onclick="toggleMonitor()">CERRAR</button>
             </div>
         </div>
 
-        <div id="ui-layer">
+        <div id="ui-panel">
             <button id="btn-mask">🎭 MÁSCARA</button>
-            <div id="radio-panel">
-                <span id="radio-status">RADIO: OK</span>
-                <input type="range" id="radio-dial" min="0" max="100" value="50">
+            
+            <div id="radio-box">
+                <div id="radio-label">SINTONIZADOR RADIO</div>
+                <input type="range" id="radio-dial" min="0" max="100">
+                <div id="radio-indicator"></div>
             </div>
-            <div class="right-controls">
-                <button id="btn-monitor" onclick="toggleMonitor()">🖥️ CÁMARAS</button>
-                <button id="btn-door">🚪 PUERTA</button>
+
+            <div class="action-btns">
+                <button id="btn-monitor" onclick="toggleMonitor()">CÁMARAS</button>
+                <button id="btn-door">PUERTA</button>
             </div>
-            <button id="btn-emp" class="hidden">⚡ ACTIVAR EMP ⚡</button>
+            <button id="btn-emp" class="hidden">¡DETONAR EMP!</button>
         </div>
 
         <div id="jumpscare-screen" class="hidden">
             <img id="jumpscare-img" src="">
-        </div>
-    </div>
-
-    <script src="script.js"></script>
-</body>
-</html>
-                <div id="cam-controls">
-                    <button class="cam-btn active" onclick="changeCam(1)">CAM 1</button>
-                    <button class="cam-btn" onclick="changeCam(2)">CAM 2</button>
-                    <button class="cam-btn" onclick="changeCam(3)">CAM 3</button>
-                    <button class="cam-btn" onclick="changeCam(4)">CAM 4</button>
-                    <button class="cam-btn" onclick="changeCam(5)">CAM 5</button>
-                    <button id="btn-close-cam" onclick="toggleMonitor()">BAJAR MONITOR</button>
-                </div>
-            </div>
-        </div>
-
-        <div id="ui-layer">
-            <button id="btn-mask">🎭 MÁSCARA</button>
-            
-            <div id="radio-panel">
-                <span id="radio-status">SEÑAL: ESTABLE</span>
-                <input type="range" id="radio-dial" min="0" max="100" value="50">
-            </div>
-
-            <div class="right-controls">
-                <button id="btn-monitor">🖥️ CÁMARAS</button>
-                <button id="btn-door">🚪 PUERTA</button>
-            </div>
-
-            <button id="btn-emp" class="hidden">⚡ ACTIVAR EMP ⚡</button>
-        </div>
-
-        <div id="jumpscare-screen" class="hidden">
-            <img id="jumpscare-img" src="" alt="Jumpscare">
         </div>
     </div>
 
