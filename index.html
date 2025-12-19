@@ -10,14 +10,13 @@
 
     <div id="start-screen">
         <h1 class="glitch">OPERACIÓN SOMBRA</h1>
-        <p>SELECCIONA TU TURNO:</p>
         <div id="night-menu">
             <button onclick="startGame(1)">NOCHE 1</button>
             <button onclick="startGame(2)">NOCHE 2</button>
             <button onclick="startGame(3)">NOCHE 3</button>
             <button onclick="startGame(4)">NOCHE 4</button>
-            <button onclick="startGame(5)">NOCHE 5</button>
-            <button onclick="startGame(6)" style="color:red; border-color:red;">NOCHE 6 (PESADILLA)</button>
+            <button onclick="startGame(5)" style="color:#f00">JEFE: MOLOT</button>
+            <button onclick="startGame(6)" style="border-color:#f00">MODO 6</button>
         </div>
     </div>
 
@@ -25,7 +24,7 @@
         <div id="top-bar">
             <div id="clock">12:00 AM</div>
             <div id="power-box">
-                ENERGÍA: <span id="power-num">100</span>%
+                BAT: <span id="power-num">100</span>%
                 <div id="power-bar"><div id="power-fill"></div></div>
             </div>
         </div>
@@ -40,19 +39,19 @@
                 <div id="cam-name">CCTV: MUELLE</div>
             </div>
             <div id="cam-buttons">
-                <button onclick="changeCam(1)">1</button>
-                <button onclick="changeCam(2)">2</button>
-                <button onclick="changeCam(3)">3</button>
-                <button onclick="changeCam(4)">4</button>
-                <button onclick="changeCam(5)">5</button>
-                <button onclick="toggleMonitor()" id="btn-close-cam">BAJAR MONITOR</button>
+                <button onclick="changeCam(1)">CAM 1</button>
+                <button onclick="changeCam(2)">CAM 2</button>
+                <button onclick="changeCam(3)">CAM 3</button>
+                <button onclick="changeCam(4)">CAM 4</button>
+                <button onclick="changeCam(5)">CAM 5</button>
+                <button onclick="toggleMonitor()" class="btn-danger">BAJAR</button>
             </div>
         </div>
 
         <div id="ui-panel">
             <button onclick="toggleMask()" id="btn-mask">🎭 MÁSCARA</button>
-            <button onclick="toggleMonitor()">🖥️ MONITOR</button>
-            <button onclick="toggleDoor()" id="btn-door">🚪 PUERTA: ABIERTA</button>
+            <button onclick="toggleMonitor()">🖥️ CÁMARAS</button>
+            <button onclick="toggleDoor()" id="btn-door">🚪 PUERTA</button>
         </div>
     </div>
 
