@@ -1,37 +1,32 @@
-body, html { margin: 0; padding: 0; background: #000; color: #0f0; font-family: monospace; overflow: hidden; }
+body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; color: #0f0; font-family: monospace; overflow: hidden; }
 .hidden { display: none !important; }
 
-#start-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; text-align: center; }
-#night-menu { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
+/* MENÚ PRO */
+#start-screen { 
+    display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh;
+    background: radial-gradient(circle, #1a0000 0%, #000 100%);
+}
+#night-menu { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 20px; }
 
+/* AJUSTE DE PANTALLA */
 #game-container { position: relative; width: 100vw; height: 100vh; }
-#office-bg { position: absolute; inset: 0; background-size: cover; background-position: center; z-index: 1; transition: 0.3s; }
+#office-bg { position: absolute; top: 0; width: 100%; height: 70vh; background-size: cover; background-position: center; z-index: 1; }
 
-/* ESTÁTICA CSS PURA */
-.noise-overlay {
-    position: absolute; inset: 0; z-index: 5; opacity: 0.15; pointer-events: none;
-    background-image: repeating-radial-gradient(#000 0 0.0001%, #fff 0 0.0002%);
-    background-size: 250px 250px;
-    animation: noiseAnim 0.15s infinite;
-}
-@keyframes noiseAnim { 0% { background-position: 0 0; } 100% { background-position: 100px 100px; } }
-
-.scanlines {
-    position: absolute; inset: 0; z-index: 6; pointer-events: none;
-    background: linear-gradient(rgba(18,16,16,0) 50%, rgba(0,0,0,0.1) 50%);
-    background-size: 100% 3px;
-}
-
-#top-bar { position: absolute; top: 0; width: 100%; display: flex; justify-content: space-between; padding: 20px; z-index: 10; background: rgba(0,0,0,0.6); box-sizing: border-box; }
-#power-bar { width: 120px; height: 12px; border: 1px solid #0f0; background: #222; }
+#top-bar { position: absolute; top: 0; width: 100%; display: flex; justify-content: space-between; padding: 10px; z-index: 10; background: rgba(0,0,0,0.8); font-size: 14px; box-sizing: border-box; }
+#power-bar { width: 60px; height: 8px; border: 1px solid #0f0; margin-left: 5px; }
 #power-fill { height: 100%; background: #0f0; width: 100%; }
 
-#ui-panel { position: absolute; bottom: 20px; width: 100%; display: flex; justify-content: center; gap: 10px; z-index: 10; }
+/* BOTONES GIGANTES PARA MÓVIL */
+#ui-panel { position: absolute; bottom: 0; width: 100%; height: 30vh; display: flex; justify-content: space-around; align-items: center; background: #111; z-index: 10; padding: 10px; box-sizing: border-box; }
+#ui-panel button { flex: 1; height: 80%; margin: 5px; font-size: 12px; border: 2px solid #0f0; background: #000; color: #0f0; font-weight: bold; }
 
+/* CÁMARAS */
 #camera-monitor { position: fixed; inset: 0; background: #000; z-index: 100; display: flex; flex-direction: column; }
 #cam-display { flex: 1; position: relative; }
 #cam-img { width: 100%; height: 100%; object-fit: contain; }
-#cam-buttons { height: 80px; display: flex; justify-content: center; gap: 5px; padding: 10px; background: #111; }
+#cam-buttons { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; padding: 10px; background: #222; height: 35vh; }
+.btn-danger { background: #500 !important; border-color: red !important; }
 
-button { background: #222; color: #0f0; border: 1px solid #0f0; padding: 10px; cursor: pointer; text-transform: uppercase; }
-button:hover { background: #0f0; color: #000; }
+/* ESTÁTICA */
+.noise-overlay { position: absolute; inset: 0; z-index: 5; opacity: 0.15; pointer-events: none; background-image: repeating-radial-gradient(#000 0 0.0001%, #fff 0 0.0002%); background-size: 200px 200px; animation: noise 0.2s infinite; }
+@keyframes noise { 0% { background-position: 0 0; } 100% { background-position: 50px 50px; } }
