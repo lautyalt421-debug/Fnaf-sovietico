@@ -3,19 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>OPERACIÓN SOMBRA</title>
+    <title>OPERACIÓN SOMBRA - BÚNKER</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <audio id="snd-static" src="assets/sounds/static.mp3" loop></audio>
-    <audio id="snd-move" src="assets/sounds/move.mp3"></audio>
-    <audio id="snd-alarm" src="assets/sounds/alarm.mp3"></audio>
+    <audio id="snd-office" src="assets/sounds/ambience.mp3" loop></audio>
 
     <div id="start-screen">
         <div class="menu-box">
             <h1 class="glitch">OPERACIÓN SOMBRA</h1>
             <div id="night-menu"></div>
-            <button id="btn-reset">BORRAR MEMORIA</button>
+            <button id="btn-reset">REINICIAR SISTEMA</button>
         </div>
     </div>
 
@@ -32,7 +31,11 @@
         <div id="camera-monitor" class="hidden">
             <div id="cam-viewport">
                 <img id="cam-img" src="">
-                <div id="static-layer"></div> <div id="cam-label">CAM 1 - MUELLE</div>
+                <div id="static-layer"></div>
+                <div id="cam-label">CAM 1 - MUELLE</div>
+                <div id="molot-minigame" class="hidden">
+                    <div id="node-container"></div>
+                </div>
             </div>
             <div id="cam-controls">
                 <div class="cam-grid">
@@ -42,7 +45,7 @@
                     <button class="cam-btn" data-cam="4">C4</button>
                     <button class="cam-btn" data-cam="5">C5</button>
                 </div>
-                <button id="btn-cam-close">CERRAR MONITOR</button>
+                <button id="btn-cam-close">VOLVER A CONSOLA</button>
             </div>
         </div>
 
@@ -53,7 +56,10 @@
         </div>
     </div>
 
-    <div id="jumpscare-container" class="hidden"><img id="jumpscare-img" src=""></div>
+    <div id="jumpscare-container" class="hidden">
+        <img id="jumpscare-img" src="">
+    </div>
+
     <script src="script.js"></script>
 </body>
 </html>
