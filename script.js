@@ -1,185 +1,126 @@
-let GAME = { active: false, hour: 0, power: 100, camOpen: false, doorClosed: false, maskOn: false, currentCam: 1, night: 1, molot: false, nodes: 0 };
-const IMG_PATH = "assets/images/";
-const BOTS = {
-    stalnoy: { pos: 1, path: [1, 2, 4, 100], gif: "stalnoy_scare.gif" },
-    prizrak: { pos: 1, path: [1, 3, 100], gif: "prizrak_scare.gif" },
-    svyaz: { pos: 1, path: [1, 5, 2, 100], gif: "svyaz_scare.gif" },
-    molot: { pos: 1, gif: "molot_scare.gif" }
+const AudioSys = {
+    ctx: null,
+    init() { if(!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); },
+    beep(f, d) {
+        const o = this.ctx.createOscillator();
+        const g = this.ctx.createGain();
+        o.frequency.value = f; g.gain.value = 0.1;
+        o.connect(g); g.connect(this.ctx.destination);
+        o.start(); o.stop(this.ctx.currentTime + d);
+    },
+    staticSound(d) {
+        const bSize = this.ctx.sampleRate * d;
+        const b = this.ctx.createBuffer(1, bSize, this.ctx.sampleRate);
+        const data = b.getChannelData(0);
+        for(let i=0; i<bSize; i++) data[i] = Math.random() * 2 - 1;
+        const s = this.ctx.createBufferSource();
+        s.buffer = b; const g = this.ctx.createGain();
+        g.gain.value = 0.05; s.connect(g); g.connect(this.ctx.destination);
+        s.start();
+    }
 };
 
-window.onload = loadMenu;
+const game = {
+    active: false, power: 100, hour: 0, cam: 1,
+    isCam: false, isDoor: false, isMask: false,
+    bots: {
+        stalnoy: { pos: 1, path: [1, 2, 4, 100], scare: "stalnoy_scare.gif" }
+    },
 
-function loadMenu() {
-    const menu = document.getElementById('night-menu');
-    menu.innerHTML = "";
-    const unlocked = parseInt(localStorage.getItem('sombra_night') || 1);
-    for (let i = 1; i <= 6; i++) {
-        let btn = document.createElement('button');
-        btn.innerText = (i === 6) ? "EXPEDIENTE ???" : "OPERACIÓN " + i;
-        btn.style.opacity = (i > unlocked) ? "0.3" : "1";
-        if (i <= unlocked) btn.onclick = () => startGame(i);
-        menu.appendChild(btn);
-    }
-    document.getElementById('btn-reset').onclick = () => { localStorage.clear(); location.reload(); };
-}
+    start() {
+        AudioSys.init();
+        AudioSys.beep(400, 0.5);
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('game-ui').classList.remove('hidden');
+        this.active = true;
+        this.updateOffice();
+        
+        setInterval(() => this.loop(), 1000);
+        setInterval(() => this.moveBots(), 5000);
+    },
 
-function startGame(n) {
-    GAME = { active: true, hour: 0, power: 100, camOpen: false, doorClosed: false, maskOn: false, currentCam: 1, night: n };
-    for(let b in BOTS) BOTS[b].pos = 1;
-    document.getElementById('start-screen').classList.add('hidden');
-    document.getElementById('game-container').classList.remove('hidden');
-    
-    document.getElementById('snd-office').play();
-    setupEvents();
-    updateOffice();
-    
-    window.gameIntervals = [
-        setInterval(tickClock, 45000),
-        setInterval(updatePower, 1000),
-        setInterval(moveBots, 5000)
-    ];
-}
+    loop() {
+        if(!this.active) return;
+        // Energía
+        let drain = 0.15 + (this.isDoor ? 0.3 : 0) + (this.isCam ? 0.2 : 0);
+        this.power -= drain;
+        document.getElementById('power').innerText = Math.floor(this.power) + "%";
+        if(this.power <= 0) this.jumpscare('stalnoy');
 
-function moveBots() {
-    if(!GAME.active) return;
-    let diff = (GAME.night >= 4) ? 0.7 : 0.4;
-
-    for(let b in BOTS) {
-        if (b === 'prizrak' && GAME.night < 2) continue;
-        if (b === 'svyaz' && GAME.night < 3) continue;
-        if (b === 'molot' && GAME.night < 5) continue;
-        if (GAME.night === 5 && (b === 'prizrak' || b === 'svyaz')) continue;
-
-        if(Math.random() < diff) {
-            let oldPos = BOTS[b].pos;
-            if(b === 'molot') { if(GAME.camOpen && !GAME.molot) startMolot(); continue; }
-            
-            let idx = BOTS[b].path.indexOf(oldPos);
-            if(idx < BOTS[b].path.length - 1) {
-                BOTS[b].pos = BOTS[b].path[idx+1];
-                // EFECTO DE ESTÁTICA SI SE MUEVE CERCA DE TU VISTA
-                if (GAME.camOpen && (oldPos === GAME.currentCam || BOTS[b].pos === GAME.currentCam)) {
-                    triggerStatic();
-                }
-            }
-            if(BOTS[b].pos === 100) checkAttack(b);
+        // Reloj (Cada 60 seg cambia hora)
+        this.tickCounter = (this.tickCounter || 0) + 1;
+        if(this.tickCounter >= 60) {
+            this.hour++; this.tickCounter = 0;
+            document.getElementById('clock').innerText = this.hour + ":00 AM";
+            if(this.hour === 6) { alert("GANASTE"); location.reload(); }
         }
+    },
+
+    moveBots() {
+        if(!this.active) return;
+        let b = this.bots.stalnoy;
+        if(Math.random() > 0.5) {
+            let idx = b.path.indexOf(b.pos);
+            if(idx < b.path.length - 1) b.pos = b.path[idx+1];
+            
+            if(this.isCam && b.pos === this.cam) this.triggerStatic();
+            if(b.pos === 100 && !this.isDoor) this.jumpscare('stalnoy');
+            else if(b.pos === 100 && this.isDoor) { b.pos = 1; AudioSys.beep(100, 0.2); }
+        }
+    },
+
+    triggerStatic() {
+        const s = document.getElementById('static-overlay');
+        s.classList.add('static-on');
+        AudioSys.staticSound(0.5);
+        setTimeout(() => s.classList.remove('static-on'), 500);
+    },
+
+    toggleDoor() {
+        this.isDoor = !this.isDoor;
+        document.getElementById('btn-door').classList.toggle('active');
+        AudioSys.beep(200, 0.1);
+        this.updateOffice();
+    },
+
+    toggleMonitor() {
+        if(this.isMask) return;
+        this.isCam = !this.isCam;
+        document.getElementById('monitor-layer').classList.toggle('hidden');
+        if(this.isCam) { this.triggerStatic(); this.updateCam(); }
+    },
+
+    toggleMask() {
+        if(this.isCam) return;
+        this.isMask = !this.isMask;
+        document.getElementById('btn-mask').classList.toggle('active');
+        AudioSys.beep(600, 0.05);
+    },
+
+    switchCam(n) {
+        this.cam = n;
+        this.triggerStatic();
+        this.updateCam();
+    },
+
+    updateOffice() {
+        const img = this.isDoor ? "oficina_cerrada.jpg" : "oficina_base.jpg";
+        document.getElementById('office-img').style.backgroundImage = `url('assets/images/${img}')`;
+    },
+
+    updateCam() {
+        const names = ["", "MUELLE", "PASILLO", "CALDERAS", "PATIO", "NODO"];
+        let suffix = (this.bots.stalnoy.pos === this.cam) ? "_stalnoy" : "";
+        document.getElementById('cam-img').src = `assets/images/${names[this.cam].toLowerCase()}${suffix}.jpg`;
+        document.getElementById('cam-label').innerText = `CAM 0${this.cam} - ${names[this.cam]}`;
+    },
+
+    jumpscare(name) {
+        this.active = false;
+        const l = document.getElementById('jumpscare-layer');
+        document.getElementById('scare-img').src = `assets/sprites/${this.bots[name].scare}`;
+        l.classList.remove('hidden');
+        AudioSys.staticSound(2);
+        setTimeout(() => location.reload(), 2000);
     }
-}
-
-function triggerStatic() {
-    const layer = document.getElementById('static-layer');
-    const snd = document.getElementById('snd-static');
-    layer.classList.add('active-static');
-    snd.play();
-    setTimeout(() => {
-        changeCam(GAME.currentCam);
-        setTimeout(() => { 
-            layer.classList.remove('active-static'); 
-            if(!GAME.camOpen) snd.pause();
-        }, 400);
-    }, 100);
-}
-
-function changeCam(id) {
-    GAME.currentCam = id;
-    let bot = "";
-    for(let b in BOTS) { if(BOTS[b].pos === id && b !== 'molot') bot = "_" + b; }
-    
-    const names = {1:"muelle", 2:"pasillo", 3:"calderas", 4:"patio", 5:"nodo"};
-    document.getElementById('cam-img').src = `${IMG_PATH}${names[id]}${bot}.jpg`;
-    document.getElementById('cam-label').innerText = `CAM ${id} - ${names[id].toUpperCase()}`;
-}
-
-function checkAttack(name) {
-    if(name === 'stalnoy' && !GAME.doorClosed) triggerJumpscare('stalnoy');
-    else if(name === 'prizrak' && GAME.camOpen) triggerJumpscare('prizrak');
-    else if(name === 'svyaz') {
-        document.getElementById('oxygen-alert').classList.remove('hidden');
-        setTimeout(() => {
-            if(!GAME.maskOn) triggerJumpscare('svyaz');
-            else { document.getElementById('oxygen-alert').classList.add('hidden'); BOTS.svyaz.pos = 1; }
-        }, 5000);
-    }
-    else BOTS[name].pos = 1;
-}
-
-function updatePower() {
-    if(!GAME.active) return;
-    let usage = 1 + (GAME.doorClosed?1:0) + (GAME.camOpen?1:0) + (GAME.maskOn?1:0);
-    GAME.power -= (0.12 * usage);
-    
-    if (GAME.power < 20 && Math.random() > 0.8) {
-        document.getElementById('office-bg').style.filter = "brightness(0.2)";
-        setTimeout(() => document.getElementById('office-bg').style.filter = "brightness(1)", 100);
-    }
-
-    document.getElementById('power-num').innerText = Math.max(0, Math.floor(GAME.power));
-    document.getElementById('usage-visual').innerText = "I".repeat(usage);
-    if(GAME.power <= 0) triggerJumpscare('svyaz');
-}
-
-function setupEvents() {
-    const btnMask = document.getElementById('btn-mask');
-    const btnDoor = document.getElementById('btn-door');
-    const btnMon = document.getElementById('btn-monitor');
-
-    btnMask.onclick = () => { 
-        if(GAME.camOpen) return;
-        GAME.maskOn = !GAME.maskOn;
-        btnMask.classList.toggle('active-btn');
-        document.getElementById('mask-overlay').classList.toggle('hidden');
-    };
-
-    btnDoor.onclick = () => {
-        GAME.doorClosed = !GAME.doorClosed;
-        btnDoor.classList.toggle('active-btn');
-        updateOffice();
-    };
-
-    btnMon.onclick = toggleMonitor;
-    document.getElementById('btn-cam-close').onclick = toggleMonitor;
-    
-    document.querySelectorAll('.cam-btn').forEach(b => {
-        b.onclick = () => { triggerStatic(); };
-    });
-}
-
-function toggleMonitor() {
-    GAME.camOpen = !GAME.camOpen;
-    document.getElementById('camera-monitor').classList.toggle('hidden');
-    const snd = document.getElementById('snd-static');
-    if(GAME.camOpen) {
-        changeCam(GAME.currentCam);
-        snd.play();
-        snd.volume = 0.2;
-    } else {
-        snd.pause();
-    }
-}
-
-function updateOffice() {
-    let img = (GAME.night >= 5) ? "oficina_rota.jpg" : "oficina_base.jpg";
-    if(GAME.doorClosed) img = "oficina_cerrada.jpg";
-    document.getElementById('office-bg').style.backgroundImage = `url('${IMG_PATH}${img}')`;
-}
-
-function tickClock() {
-    GAME.hour++;
-    document.getElementById('clock').innerText = (GAME.hour === 0 ? "12" : GAME.hour) + ":00 AM";
-    if(GAME.hour === 6) { 
-        localStorage.setItem('sombra_night', GAME.night + 1); 
-        alert("TURNO FINALIZADO");
-        location.reload(); 
-    }
-}
-
-function triggerJumpscare(bot) {
-    GAME.active = false;
-    window.gameIntervals.forEach(clearInterval);
-    const container = document.getElementById('jumpscare-container');
-    const img = document.getElementById('jumpscare-img');
-    img.src = `assets/sprites/${BOTS[bot].gif}`;
-    container.classList.remove('hidden');
-    setTimeout(() => location.reload(), 2000);
-}
+};
