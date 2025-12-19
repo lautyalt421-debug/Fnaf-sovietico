@@ -11,7 +11,7 @@
     <div id="start-screen">
         <h1 class="glitch">OPERACIÓN SOMBRA</h1>
         <div id="night-menu"></div>
-        <button onclick="resetProgress()" style="margin-top:20px; font-size:10px; border-color:#333; color:#555;">RESETEAR PROGRESO</button>
+        <button onclick="resetProgress()" style="margin-top:20px; font-size:10px; border-color:#333; color:#555; background:none; cursor:pointer;">RESETEAR PROGRESO</button>
     </div>
 
     <div id="game-container" class="hidden">
@@ -27,13 +27,17 @@
         </div>
 
         <div id="office-bg"></div>
+        
         <div id="mask-overlay" class="hidden"></div>
+        <div id="oxygen-alert" class="hidden">
+            <p>⚠️ ERROR: FALLO DE OXÍGENO ⚠️</p>
+        </div>
 
         <div id="camera-monitor" class="hidden">
             <div id="cam-display">
                 <img id="cam-img" src="">
                 <div id="static-layer" class="noise-overlay"></div>
-                <div id="cam-name">CCTV: SELECCIONE CAM</div>
+                <div id="cam-name">CCTV</div>
             </div>
             <div id="cam-buttons">
                 <button onclick="changeCam(1)">CAM 1</button>
@@ -52,14 +56,16 @@
         </div>
     </div>
 
-    <div id="jumpscare-container" class="hidden">
-        <img id="jumpscare-img" src="">
-    </div>
+    <div id="jumpscare-container" class="hidden"><img id="jumpscare-img" src=""></div>
 
     <div id="game-over-screen" class="hidden">
         <h2 id="death-reason">SISTEMA CORRUPTO</h2>
-        <p style="color:#444; margin-bottom:20px;">ERROR DE CONEXIÓN CON EL BÚNKER</p>
-        <button onclick="retryNight()" id="btn-retry">VOLVER A INTENTAR</button>
+        <button onclick="retryNight()" id="btn-retry">REINTENTAR</button>
+    </div>
+
+    <div id="win-screen" class="hidden">
+        <h2 style="color: #0f0; text-shadow: 0 0 15px #0f0;">¡GANASTE!</h2>
+        <button onclick="location.reload()" id="btn-next">SIGUIENTE NOCHE</button>
     </div>
 
     <script src="script.js"></script>
