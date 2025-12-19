@@ -1,39 +1,26 @@
-const GAME = {
-    night: 5, active: false, cameraOpen: false, maskOn: false, doorClosed: false,
-    currentCam: 1, radioFreq: 50, radioTarget: 50, bossFightActive: false
-};
-
-const BOTS = {
-    stalnoy: { pos: 1, path: [1, 2, 4, 100] },
-    prizrak: { pos: 1, path: [1, 3, 100] },
-    svyaz: { pos: 1, path: [1, 5, 100] }
-};
-
-// TRADUCCIÓN DE NOMBRES DE ARCHIVO
-const mapaCamaras = {
-    1: "muelle",
-    2: "pasillo",
-    3: "calderas",
-    4: "patio",
-    5: "nodo"
-};
-
-function startGame() {
-    document.getElementById('start-screen').classList.add('hidden');
-    document.getElementById('game-container').classList.remove('hidden');
-    GAME.active = true;
-    setInterval(gameLoop, 3000);
-    if (GAME.night === 5) setTimeout(startBossSequence, 15000);
+#office-bg {
+    width: 140vw; height: 100vh;
+    background: url('assets/images/oficina_base.jpg') center/cover;
+    position: absolute; left: -20vw;
 }
 
-function toggleMonitor() {
-    if (GAME.maskOn) return;
-    GAME.cameraOpen = !GAME.cameraOpen;
-    document.getElementById('camera-monitor').classList.toggle('hidden');
-    if (GAME.cameraOpen) changeCam(GAME.currentCam);
+/* Efecto de Estática en Cámaras */
+.noise-effect {
+    position: absolute; inset: 0;
+    background: url('assets/images/cams/static.gif');
+    opacity: 0.1; pointer-events: none;
 }
 
-function changeCam(id) {
+/* Barra de Energía */
+#power-bar { width: 100px; height: 10px; border: 1px solid #0f0; background: #222; }
+#power-fill { height: 100%; background: #0f0; width: 100%; transition: 0.3s; }
+
+/* Luz de Radio (Feedback) */
+#radio-indicator { width: 15px; height: 15px; border-radius: 50%; background: red; margin: 5px auto; box-shadow: 0 0 10px red; }
+
+/* Animación Alarma Boss Fight */
+.boss-alarm { animation: pulseRed 0.5s infinite; }
+@keyframes pulseRed { 0% { background: #000; } 50% { background: #400; } }
     GAME.currentCam = id;
     const camImg = document.getElementById('cam-img');
     const label = document.getElementById('cam-label');
