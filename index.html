@@ -7,11 +7,12 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
     <div id="start-screen">
         <div class="menu-box">
             <h1 class="glitch">OPERACIÓN SOMBRA</h1>
             <div id="night-menu"></div>
-            <button id="btn-reset">REINICIAR DATOS</button>
+            <button id="btn-reset">REINICIAR SISTEMA</button>
         </div>
     </div>
 
@@ -19,21 +20,20 @@
         <div id="top-bar">
             <div id="clock">12:00 AM</div>
             <div id="power-info">
-                <span>USO: <span id="usage-visual">I</span></span>
+                <span>RED ELÉCTRICA: <span id="usage-visual">I</span></span>
                 <span id="power-num">100</span>%
             </div>
         </div>
 
         <div id="office-bg"></div>
         <div id="mask-overlay" class="hidden"></div>
-        <div id="oxygen-alert" class="hidden">⚠️ FALLO DE OXÍGENO ⚠️</div>
+        <div id="oxygen-alert" class="hidden">⚠️ ALERTA: FALLO DE OXÍGENO ⚠️</div>
 
         <div id="camera-monitor" class="hidden">
             <div id="cam-viewport">
                 <img id="cam-img" src="">
                 <div id="static-layer"></div>
                 <div id="molot-minigame" class="hidden">
-                    <p>VIRUS DETECTADO</p>
                     <div id="node-container"></div>
                 </div>
             </div>
@@ -45,14 +45,14 @@
                     <button class="cam-btn" data-cam="4">C4</button>
                     <button class="cam-btn" data-cam="5">C5</button>
                 </div>
-                <button id="btn-cam-close">VOLVER A OFICINA</button>
+                <button id="btn-cam-close">VOLVER A CONSOLA</button>
             </div>
         </div>
 
         <div id="ui-panel">
-            <button id="btn-mask" class="action-btn">🎭 MÁSCARA</button>
-            <button id="btn-monitor" class="action-btn">🖥️ CÁMARAS</button>
-            <button id="btn-door" class="action-btn">🚪 PUERTA</button>
+            <button id="btn-mask" class="action-btn">FILTRO GAS</button>
+            <button id="btn-monitor" class="action-btn">VIGILANCIA</button>
+            <button id="btn-door" class="action-btn">BLINDAJE</button>
         </div>
     </div>
 
@@ -60,4 +60,3 @@
     <script src="script.js"></script>
 </body>
 </html>
-
