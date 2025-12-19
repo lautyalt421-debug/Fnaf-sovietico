@@ -11,18 +11,15 @@
     <div id="start-screen">
         <h1 class="glitch">OPERACIÓN SOMBRA</h1>
         <div id="night-menu"></div>
-        <button id="btn-reset" style="margin-top:20px; font-size:10px; border:1px solid #333; color:#555; background:none;">RESETEAR PROGRESO</button>
+        <button id="btn-reset">RESETEAR PROGRESO</button>
     </div>
 
     <div id="game-container" class="hidden">
         <div id="top-bar">
             <div id="clock">12:00 AM</div>
             <div id="power-info">
-                <div id="usage-bars">USO: <span id="usage-visual">[I]</span></div>
-                <div id="power-box">
-                    BAT: <span id="power-num">100</span>%
-                    <div id="power-bar"><div id="power-fill"></div></div>
-                </div>
+                <div>USO: <span id="usage-visual">[I]</span></div>
+                <div style="color: #0f0; font-weight: bold;">BAT: <span id="power-num">100</span>%</div>
             </div>
         </div>
 
@@ -31,18 +28,20 @@
         <div id="oxygen-alert" class="hidden"><p>⚠️ FALLO DE OXÍGENO ⚠️</p></div>
 
         <div id="camera-monitor" class="hidden">
-            <div id="cam-display">
+            <div id="cam-viewport">
                 <img id="cam-img" src="">
-                <div id="static-layer" class="noise-overlay"></div>
-                <div id="cam-name">CCTV</div>
+                <div id="static-layer"></div>
+                <div id="cam-label">SISTEMA CCTV</div>
             </div>
-            <div id="cam-buttons">
-                <button class="cam-btn" data-cam="1">CAM 1</button>
-                <button class="cam-btn" data-cam="2">CAM 2</button>
-                <button class="cam-btn" data-cam="3">CAM 3</button>
-                <button class="cam-btn" data-cam="4">CAM 4</button>
-                <button class="cam-btn" data-cam="5">CAM 5</button>
-                <button id="btn-cam-close" style="background:#400;">BAJAR</button>
+            <div id="cam-controls">
+                <div class="cam-grid">
+                    <button class="cam-btn" data-cam="1">CAM 1</button>
+                    <button class="cam-btn" data-cam="2">CAM 2</button>
+                    <button class="cam-btn" data-cam="3">CAM 3</button>
+                    <button class="cam-btn" data-cam="4">CAM 4</button>
+                    <button class="cam-btn" data-cam="5">CAM 5</button>
+                </div>
+                <button id="btn-cam-close">VOLVER A OFICINA</button>
             </div>
         </div>
 
