@@ -12,15 +12,14 @@ const sounds = {
     ambient: new Audio('assets/audio/ambiente.mp3'),
     door: new Audio('assets/audio/puerta_metal.mp3'),
     scare: new Audio('assets/audio/grito.mp3'),
-    breath: new Audio('assets/audio/respiracion.mp3') 
+    breath: new Audio('assets/audio/respiracion.mp3')
 };
-sounds.ambient.loop = true;
-sounds.breath.loop = true;
+sounds.ambient.loop = true; sounds.breath.loop = true;
 
 document.addEventListener('DOMContentLoaded', loadMenu);
 
 function toggleDoor() {
-    if(!GAME.active) return;
+    if(!GAME.active || GAME.maskOn) return; // Bloqueado si hay máscara
     GAME.doorClosed = !GAME.doorClosed;
     sounds.door.play();
     const office = document.getElementById('office-bg');
@@ -31,22 +30,28 @@ function toggleDoor() {
 function toggleMask() {
     if(!GAME.active) return;
     GAME.maskOn = !GAME.maskOn;
-    if(GAME.camOpen) toggleMonitor();
-    
+    if(GAME.camOpen) toggleMonitor(); // Baja cámaras al poner máscara
+
     const maskOverlay = document.getElementById('mask-overlay');
+    const btnMonitor = document.getElementById('btn-monitor');
+    const btnDoor = document.getElementById('btn-door');
+
     if(GAME.maskOn) {
         maskOverlay.classList.remove('hidden');
         sounds.breath.play();
+        btnMonitor.classList.add('controls-disabled');
+        btnDoor.classList.add('controls-disabled');
     } else {
         maskOverlay.classList.add('hidden');
         sounds.breath.pause();
-        sounds.breath.currentTime = 0;
+        btnMonitor.classList.remove('controls-disabled');
+        btnDoor.classList.remove('controls-disabled');
     }
     document.getElementById('btn-mask').classList.toggle('active-btn');
 }
 
 function toggleMonitor() {
-    if(!GAME.active || GAME.maskOn) return;
+    if(!GAME.active || GAME.maskOn) return; // No se puede abrir con máscara
     GAME.camOpen = !GAME.camOpen;
     document.getElementById('camera-monitor').classList.toggle('hidden');
     if(GAME.camOpen) changeCam(GAME.currentCam);
@@ -54,20 +59,13 @@ function toggleMonitor() {
 
 function changeCam(id) {
     GAME.currentCam = id;
-    const camImg = document.getElementById('cam-img');
     const staticL = document.getElementById('static-layer');
-    const names = { 1: "muelle", 2: "pasillo", 3: "calderas", 4: "patio", 5: "nodo" };
-    
-    staticL.style.opacity = "0.9"; 
-    
+    staticL.style.opacity = "0.9";
     setTimeout(() => {
-        let enemySuffix = "";
-        for (let b in BOTS) { 
-            if (BOTS[b].active && BOTS[b].pos === id) enemySuffix = "_" + b; 
-        }
-        camImg.src = `${IMG_PATH}${names[id]}${enemySuffix}.jpg`;
-        staticL.style.opacity = enemySuffix ? "0.4" : "0.1";
-        document.getElementById('cam-name').innerText = `CCTV: ${names[id].toUpperCase()}`;
+        let enemy = "";
+        for (let b in BOTS) { if (BOTS[b].active && BOTS[b].pos === id) enemy = "_" + b; }
+        document.getElementById('cam-img').src = `${IMG_PATH}${({1:"muelle",2:"pasillo",3:"calderas",4:"patio",5:"nodo"})[id]}${enemy}.jpg`;
+        staticL.style.opacity = enemy ? "0.4" : "0.1";
     }, 200);
 }
 
@@ -75,7 +73,7 @@ function updatePower() {
     if(!GAME.active) return;
     let usage = 1 + (GAME.doorClosed?1:0) + (GAME.camOpen?1:0) + (GAME.maskOn?1:0);
     document.getElementById('usage-visual').innerText = "[I]".repeat(usage);
-    GAME.power -= (0.15 * usage);
+    GAME.power -= (0.06 * Math.pow(usage, 1.4)); 
     document.getElementById('power-num').innerText = Math.max(0, Math.floor(GAME.power));
     document.getElementById('power-fill').style.width = GAME.power + "%";
     if(GAME.power <= 0) triggerJumpscare("svyaz");
@@ -94,45 +92,59 @@ function moveBots() {
 
 function checkAttack(name) {
     if(name === 'stalnoy' && !GAME.doorClosed) triggerJumpscare('stalnoy');
-    else if(name === 'prizrak' && !GAME.maskOn) triggerJumpscare('prizrak');
+    else if(name === 'prizrak') startOxygenFailure();
     else if(name === 'svyaz' && GAME.camOpen) triggerJumpscare('svyaz');
     else BOTS[name].pos = 1;
+}
+
+function startOxygenFailure() {
+    const alertBox = document.getElementById('oxygen-alert');
+    alertBox.classList.remove('hidden');
+    
+    // 4 segundos para reaccionar
+    setTimeout(() => {
+        if(!GAME.maskOn) {
+            triggerJumpscare('prizrak');
+        } else {
+            // Si tiene máscara, esperar a que se arregle
+            setTimeout(() => {
+                alertBox.classList.add('hidden');
+                BOTS.prizrak.pos = 1;
+            }, 4000);
+        }
+    }, 4000);
 }
 
 function triggerJumpscare(botName) {
     GAME.active = false;
     window.gameIntervals.forEach(clearInterval);
-    sounds.ambient.pause();
-    sounds.breath.pause();
-    sounds.scare.play();
-    
+    sounds.ambient.pause(); sounds.breath.pause(); sounds.scare.play();
     const container = document.getElementById('jumpscare-container');
-    document.getElementById('jumpscare-img').src = SPRITE_PATH + BOTS[botName].gif;
+    document.getElementById('jumpscare-img').src = SPRITE_PATH + BOTS[botName].gif + "?t=" + new Date().getTime();
     container.classList.remove('hidden');
-
     setTimeout(() => {
         container.classList.add('hidden');
+        document.getElementById('death-reason').innerText = botName.toUpperCase() + " TE ATRAPÓ";
         document.getElementById('game-over-screen').classList.remove('hidden');
     }, 1800);
 }
 
 function startGame(n) {
     GAME.active = true; GAME.night = n; GAME.power = 100; GAME.hour = 0;
-    GAME.doorClosed = false; GAME.maskOn = false; GAME.camOpen = false;
     BOTS.stalnoy.active = n >= 1; BOTS.prizrak.active = n >= 2; BOTS.svyaz.active = (n >= 3 && n !== 5);
-    
     document.getElementById('start-screen').classList.add('hidden');
     document.getElementById('game-container').classList.remove('hidden');
     document.getElementById('office-bg').style.backgroundImage = `url('${IMG_PATH}${n===5?"oficina_rota.jpg":"oficina_base.jpg"}')`;
-    
     window.gameIntervals = [
-        setInterval(() => { 
-            GAME.hour++; 
-            document.getElementById('clock').innerText = GAME.hour + ":00 AM"; 
-            if(GAME.hour===6) { localStorage.setItem('sombra_night', n+1); location.reload(); }
-        }, 45000), 
-        setInterval(updatePower, 1000), 
-        setInterval(moveBots, 6000)
+        setInterval(() => {
+            GAME.hour++; document.getElementById('clock').innerText = GAME.hour + ":00 AM";
+            if(GAME.hour === 6) {
+                GAME.active = false; window.gameIntervals.forEach(clearInterval);
+                localStorage.setItem('sombra_night', n+1);
+                document.getElementById('win-screen').classList.remove('hidden');
+            }
+        }, 45000),
+        setInterval(updatePower, 1000), setInterval(moveBots, 6000)
     ];
     sounds.ambient.play();
 }
@@ -140,11 +152,10 @@ function startGame(n) {
 function retryNight() { location.reload(); }
 function loadMenu() {
     const menu = document.getElementById('night-menu');
-    menu.innerHTML = "";
     const unlocked = parseInt(localStorage.getItem('sombra_night') || 1);
     for (let i = 1; i <= 6; i++) {
         let btn = document.createElement('button');
-        btn.innerText = "NOCHE " + i;
+        btn.innerText = i===5?"MOLOT":"NOCHE "+i;
         if (i > unlocked) btn.className = 'locked';
         btn.onclick = () => startGame(i);
         menu.appendChild(btn);
