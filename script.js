@@ -18,8 +18,15 @@ sounds.ambient.loop = true; sounds.breath.loop = true;
 
 document.addEventListener('DOMContentLoaded', loadMenu);
 
+// ASIGNACIÓN MANUAL DE EVENTOS PARA EVITAR BUGS DE BLOQUEO
+function setupButtons() {
+    document.getElementById('btn-mask').onclick = toggleMask;
+    document.getElementById('btn-door').onclick = toggleDoor;
+    document.getElementById('btn-monitor').onclick = toggleMonitor;
+}
+
 function toggleDoor() {
-    if(!GAME.active || GAME.maskOn) return; // Bloqueado si hay máscara
+    if(!GAME.active || GAME.maskOn) return; 
     GAME.doorClosed = !GAME.doorClosed;
     sounds.door.play();
     const office = document.getElementById('office-bg');
@@ -30,20 +37,22 @@ function toggleDoor() {
 function toggleMask() {
     if(!GAME.active) return;
     GAME.maskOn = !GAME.maskOn;
-    if(GAME.camOpen) toggleMonitor(); // Baja cámaras al poner máscara
-
+    
     const maskOverlay = document.getElementById('mask-overlay');
     const btnMonitor = document.getElementById('btn-monitor');
     const btnDoor = document.getElementById('btn-door');
 
     if(GAME.maskOn) {
+        if(GAME.camOpen) toggleMonitor(); 
         maskOverlay.classList.remove('hidden');
         sounds.breath.play();
+        // BLOQUEAMOS TODO EXCEPTO EL BOTÓN DE LA MÁSCARA
         btnMonitor.classList.add('controls-disabled');
         btnDoor.classList.add('controls-disabled');
     } else {
         maskOverlay.classList.add('hidden');
         sounds.breath.pause();
+        // DESBLOQUEAMOS
         btnMonitor.classList.remove('controls-disabled');
         btnDoor.classList.remove('controls-disabled');
     }
@@ -51,7 +60,7 @@ function toggleMask() {
 }
 
 function toggleMonitor() {
-    if(!GAME.active || GAME.maskOn) return; // No se puede abrir con máscara
+    if(!GAME.active || GAME.maskOn) return; 
     GAME.camOpen = !GAME.camOpen;
     document.getElementById('camera-monitor').classList.toggle('hidden');
     if(GAME.camOpen) changeCam(GAME.currentCam);
@@ -100,13 +109,10 @@ function checkAttack(name) {
 function startOxygenFailure() {
     const alertBox = document.getElementById('oxygen-alert');
     alertBox.classList.remove('hidden');
-    
-    // 4 segundos para reaccionar
     setTimeout(() => {
         if(!GAME.maskOn) {
             triggerJumpscare('prizrak');
         } else {
-            // Si tiene máscara, esperar a que se arregle
             setTimeout(() => {
                 alertBox.classList.add('hidden');
                 BOTS.prizrak.pos = 1;
@@ -135,6 +141,7 @@ function startGame(n) {
     document.getElementById('start-screen').classList.add('hidden');
     document.getElementById('game-container').classList.remove('hidden');
     document.getElementById('office-bg').style.backgroundImage = `url('${IMG_PATH}${n===5?"oficina_rota.jpg":"oficina_base.jpg"}')`;
+    setupButtons(); // Inicializar clics
     window.gameIntervals = [
         setInterval(() => {
             GAME.hour++; document.getElementById('clock').innerText = GAME.hour + ":00 AM";
@@ -153,6 +160,7 @@ function retryNight() { location.reload(); }
 function loadMenu() {
     const menu = document.getElementById('night-menu');
     const unlocked = parseInt(localStorage.getItem('sombra_night') || 1);
+    menu.innerHTML = "";
     for (let i = 1; i <= 6; i++) {
         let btn = document.createElement('button');
         btn.innerText = i===5?"MOLOT":"NOCHE "+i;
