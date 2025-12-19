@@ -2,67 +2,61 @@ const AudioSys = {
     ctx: null,
     init() { if(!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); },
     beep(f, d) {
-        const o = this.ctx.createOscillator();
-        const g = this.ctx.createGain();
+        if(!this.ctx) return;
+        let o = this.ctx.createOscillator(), g = this.ctx.createGain();
         o.frequency.value = f; g.gain.value = 0.1;
         o.connect(g); g.connect(this.ctx.destination);
         o.start(); o.stop(this.ctx.currentTime + d);
     },
-    staticSound(d) {
-        const bSize = this.ctx.sampleRate * d;
-        const b = this.ctx.createBuffer(1, bSize, this.ctx.sampleRate);
-        const data = b.getChannelData(0);
-        for(let i=0; i<bSize; i++) data[i] = Math.random() * 2 - 1;
-        const s = this.ctx.createBufferSource();
-        s.buffer = b; const g = this.ctx.createGain();
-        g.gain.value = 0.05; s.connect(g); g.connect(this.ctx.destination);
-        s.start();
+    noise(d) {
+        if(!this.ctx) return;
+        let b = this.ctx.createBuffer(1, this.ctx.sampleRate * d, this.ctx.sampleRate),
+            data = b.getChannelData(0);
+        for(let i=0; i<data.length; i++) data[i] = Math.random() * 2 - 1;
+        let s = this.ctx.createBufferSource(); s.buffer = b;
+        let g = this.ctx.createGain(); g.gain.value = 0.05;
+        s.connect(g); g.connect(this.ctx.destination); s.start();
     }
 };
 
 const game = {
-    active: false, power: 100, hour: 0, cam: 1,
+    active: false, night: 1, power: 100, hour: 0, cam: 1,
     isCam: false, isDoor: false, isMask: false,
     bots: {
         stalnoy: { pos: 1, path: [1, 2, 4, 100], scare: "stalnoy_scare.gif" }
     },
 
-    start() {
+    start(n) {
+        this.night = n;
         AudioSys.init();
-        AudioSys.beep(400, 0.5);
+        AudioSys.beep(400, 0.3);
         document.getElementById('start-screen').classList.add('hidden');
         document.getElementById('game-ui').classList.remove('hidden');
         this.active = true;
         this.updateOffice();
-        
-        setInterval(() => this.loop(), 1000);
-        setInterval(() => this.moveBots(), 5000);
+        this.timer = setInterval(() => this.loop(), 1000);
+        this.aiTimer = setInterval(() => this.moveBots(), 6000 - (this.night * 500));
     },
 
     loop() {
         if(!this.active) return;
-        // Energía
-        let drain = 0.15 + (this.isDoor ? 0.3 : 0) + (this.isCam ? 0.2 : 0);
-        this.power -= drain;
+        this.power -= (0.15 + (this.isDoor?0.3:0) + (this.isCam?0.2:0));
         document.getElementById('power').innerText = Math.floor(this.power) + "%";
         if(this.power <= 0) this.jumpscare('stalnoy');
 
-        // Reloj (Cada 60 seg cambia hora)
-        this.tickCounter = (this.tickCounter || 0) + 1;
-        if(this.tickCounter >= 60) {
-            this.hour++; this.tickCounter = 0;
+        this.ticks = (this.ticks || 0) + 1;
+        if(this.ticks >= 50) { // Cada 50 seg sube una hora
+            this.hour++; this.ticks = 0;
             document.getElementById('clock').innerText = this.hour + ":00 AM";
-            if(this.hour === 6) { alert("GANASTE"); location.reload(); }
+            if(this.hour === 6) { alert("OPERACIÓN COMPLETADA"); location.reload(); }
         }
     },
 
     moveBots() {
-        if(!this.active) return;
         let b = this.bots.stalnoy;
-        if(Math.random() > 0.5) {
+        if(Math.random() > 0.4) {
             let idx = b.path.indexOf(b.pos);
             if(idx < b.path.length - 1) b.pos = b.path[idx+1];
-            
             if(this.isCam && b.pos === this.cam) this.triggerStatic();
             if(b.pos === 100 && !this.isDoor) this.jumpscare('stalnoy');
             else if(b.pos === 100 && this.isDoor) { b.pos = 1; AudioSys.beep(100, 0.2); }
@@ -70,21 +64,20 @@ const game = {
     },
 
     triggerStatic() {
-        const s = document.getElementById('static-overlay');
+        let s = document.getElementById('static-overlay');
         s.classList.add('static-on');
-        AudioSys.staticSound(0.5);
-        setTimeout(() => s.classList.remove('static-on'), 500);
+        AudioSys.noise(0.4);
+        setTimeout(() => s.classList.remove('static-on'), 400);
     },
 
     toggleDoor() {
         this.isDoor = !this.isDoor;
         document.getElementById('btn-door').classList.toggle('active');
-        AudioSys.beep(200, 0.1);
+        AudioSys.beep(150, 0.1);
         this.updateOffice();
     },
 
     toggleMonitor() {
-        if(this.isMask) return;
         this.isCam = !this.isCam;
         document.getElementById('monitor-layer').classList.toggle('hidden');
         if(this.isCam) { this.triggerStatic(); this.updateCam(); }
@@ -94,7 +87,7 @@ const game = {
         if(this.isCam) return;
         this.isMask = !this.isMask;
         document.getElementById('btn-mask').classList.toggle('active');
-        AudioSys.beep(600, 0.05);
+        AudioSys.beep(500, 0.05);
     },
 
     switchCam(n) {
@@ -104,23 +97,25 @@ const game = {
     },
 
     updateOffice() {
-        const img = this.isDoor ? "oficina_cerrada.jpg" : "oficina_base.jpg";
-        document.getElementById('office-img').style.backgroundImage = `url('assets/images/${img}')`;
+        let name = this.isDoor ? "oficina_cerrada.jpg" : "oficina_base.jpg";
+        document.getElementById('office-img').style.backgroundImage = `url('assets/images/${name}')`;
     },
 
     updateCam() {
-        const names = ["", "MUELLE", "PASILLO", "CALDERAS", "PATIO", "NODO"];
+        let names = ["", "muelle", "pasillo", "calderas", "patio", "nodo"];
         let suffix = (this.bots.stalnoy.pos === this.cam) ? "_stalnoy" : "";
-        document.getElementById('cam-img').src = `assets/images/${names[this.cam].toLowerCase()}${suffix}.jpg`;
-        document.getElementById('cam-label').innerText = `CAM 0${this.cam} - ${names[this.cam]}`;
+        let finalPath = `assets/images/${names[this.cam]}${suffix}.jpg`;
+        document.getElementById('cam-img').src = finalPath;
+        document.getElementById('cam-label').innerText = `CAM 0${this.cam} - ${names[this.cam].toUpperCase()}`;
     },
 
-    jumpscare(name) {
+    jumpscare(bot) {
         this.active = false;
-        const l = document.getElementById('jumpscare-layer');
-        document.getElementById('scare-img').src = `assets/sprites/${this.bots[name].scare}`;
-        l.classList.remove('hidden');
-        AudioSys.staticSound(2);
-        setTimeout(() => location.reload(), 2000);
+        clearInterval(this.timer); clearInterval(this.aiTimer);
+        let layer = document.getElementById('jumpscare-layer');
+        document.getElementById('scare-img').src = `assets/sprites/${this.bots[bot].scare}`;
+        layer.classList.remove('hidden');
+        AudioSys.noise(2);
+        setTimeout(() => location.reload(), 3000);
     }
 };
