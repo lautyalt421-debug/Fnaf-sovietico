@@ -1,146 +1,83 @@
-let STATE = {
-    night: 1, hour: 0, power: 100,
-    active: false, door: false, mask: false, cam: false,
-    radioVal: 50, radioTarget: 50, bossMode: false
-};
+let GAME = { active: false, hour: 0, power: 100, camOpen: false, doorClosed: false, maskOn: false, currentCam: 1, night: 1 };
+const IMG_PATH = "assets/images/";
+const camNames = { 1: "muelle", 2: "pasillo", 3: "calderas", 4: "patio", 5: "nodo" };
+const BOTS = { stalnoy: { pos: 1, path: [1, 2, 4, 100] }, prizrak: { pos: 1, path: [1, 3, 100] } };
 
-const BOTS = {
-    stalnoy: { pos: 1, path: [1, 2, 4, 100] },
-    prizrak: { pos: 1, path: [1, 3, 100] },
-    svyaz: { pos: 1, path: [1, 5, 100] }
-};
+function startGame(nightNum) {
+    GAME.active = true;
+    GAME.night = nightNum;
+    
+    // Dificultad escalable: IA más rápida y menos batería por noche
+    let aiSpeed = 6000 - (nightNum * 800);
+    let powerMult = 1 + (nightNum * 0.15);
 
-const camFiles = { 1: "muelle", 2: "pasillo", 3: "calderas", 4: "patio", 5: "nodo" };
-
-function startGame(n) {
-    STATE.night = n;
-    STATE.active = true;
     document.getElementById('start-screen').classList.add('hidden');
     document.getElementById('game-container').classList.remove('hidden');
+    document.getElementById('office-bg').style.backgroundImage = `url('${IMG_PATH}oficina_base.jpg')`;
     
-    // Iniciar Sistemas
-    setInterval(tickClock, 60000); // 1 hora cada 60 seg
-    setInterval(updatePower, 1500); // Consumo de luz
-    setInterval(aiMove, 5000 - (n * 500)); // IA se acelera cada noche
-    
-    if (n === 5) setTimeout(triggerBoss, 20000); // El Tanque aparece a los 20 seg
+    setInterval(tickClock, 60000); 
+    setInterval(() => updatePower(powerMult), 1500); 
+    setInterval(moveBots, aiSpeed); 
 }
 
 function tickClock() {
-    if (!STATE.active) return;
-    STATE.hour++;
-    document.getElementById('clock').innerText = `${STATE.hour} AM`;
-    if (STATE.hour === 6) alert("¡SOBREVIVISTE!");
+    if (!GAME.active) return;
+    GAME.hour++;
+    document.getElementById('clock').innerText = `${GAME.hour}:00 AM`;
+    if (GAME.hour === 6) endGame("¡SOBREVIVISTE A LA NOCHE " + GAME.night + "!");
 }
 
-function updatePower() {
-    if (!STATE.active) return;
-    let cost = 0.1;
-    if (STATE.door) cost += 0.4;
-    if (STATE.cam) cost += 0.3;
-    
-    STATE.power -= cost;
-    document.getElementById('power-num').innerText = Math.floor(STATE.power);
-    document.getElementById('power-fill').style.width = STATE.power + "%";
-    
-    if (STATE.power <= 0) die("Energía agotada");
+function updatePower(mult) {
+    if (!GAME.active) return;
+    let drain = 0.1 * mult;
+    if (GAME.camOpen) drain += 0.3;
+    if (GAME.doorClosed) drain += 0.6;
+    GAME.power -= drain;
+    document.getElementById('power-num').innerText = Math.floor(GAME.power);
+    document.getElementById('power-fill').style.width = GAME.power + "%";
+    if (GAME.power <= 0) endGame("SIN ENERGÍA - ESTÁS INDEFENSO");
 }
 
-function aiMove() {
-    if (!STATE.active || STATE.bossMode) return;
+function moveBots() {
+    if (!GAME.active) return;
     for (let b in BOTS) {
         if (Math.random() > 0.5) {
             let bot = BOTS[b];
             let idx = bot.path.indexOf(bot.pos);
             if (idx < bot.path.length - 1) bot.pos = bot.path[idx + 1];
-            else attack(b);
+            if (bot.pos === 100) checkAttack(b);
         }
     }
 }
 
-function attack(name) {
-    if (name === 'stalnoy' && !STATE.door) die('stalnoy');
-    if (name === 'prizrak' && !STATE.mask) die('prizrak');
-    // Si la puerta está cerrada, Stalnoy vuelve a la cámara 1
-    if (name === 'stalnoy' && STATE.door) BOTS.stalnoy.pos = 1;
+function checkAttack(name) {
+    if (name === 'stalnoy' && !GAME.doorClosed) endGame("STALNOY TE ATRAPÓ");
+    if (name === 'prizrak' && !GAME.maskOn) endGame("PRIZRAK TE ATRAPÓ");
+    if (GAME.active) BOTS[name].pos = 1; 
 }
 
-function triggerBoss() {
-    STATE.bossMode = true;
-    // Secuencia de Boss: Pasos -> Vidrio Roto -> Alarma -> Tanque
-    document.getElementById('office-bg').style.backgroundImage = "url('assets/images/oficina_rota.jpg')";
-    document.getElementById('game-container').classList.add('boss-alarm');
-    document.getElementById('enemy-layer').innerHTML = '<img src="assets/images/sprites/tanque_boss.png" style="width:70%;">';
-    document.getElementById('btn-emp').classList.remove('hidden');
+function toggleMonitor() {
+    GAME.camOpen = !GAME.camOpen;
+    document.getElementById('camera-monitor').classList.toggle('hidden');
+    if (GAME.camOpen) changeCam(GAME.currentCam);
 }
 
-function die(bot) {
-    STATE.active = false;
-    const js = document.getElementById('jumpscare-screen');
-    js.classList.remove('hidden');
-    document.getElementById('jumpscare-img').src = `assets/images/sprites/${bot}_scare.gif`;
-    setTimeout(() => location.reload(), 3000);
+function changeCam(id) {
+    GAME.currentCam = id;
+    let enemy = "";
+    for (let b in BOTS) { if (BOTS[b].pos === id) enemy = "_" + b; }
+    document.getElementById('cam-img').src = `${IMG_PATH}${camNames[id]}${enemy}.jpg`;
+    document.getElementById('cam-name').innerText = `CCTV: ${camNames[id].toUpperCase()}`;
 }
 
-// Controles de botones
-document.getElementById('btn-door').onclick = () => {
-    STATE.door = !STATE.door;
-    document.getElementById('btn-door').innerText = STATE.door ? "PUERTA: OFF" : "PUERTA: ON";
-};
-
-document.getElementById('btn-mask').onclick = () => {
-    STATE.mask = !STATE.mask;
-    document.getElementById('mask-overlay').classList.toggle('hidden');
-};
-    camImg.src = `assets/images/cams/${base}${botVisible}.jpg`;
-    label.innerText = `CCTV: ${base.toUpperCase()}`;
-
-    document.querySelectorAll('.cam-btn').forEach(btn => btn.classList.remove('active'));
-    document.getElementById(`btn-cam-${id}`).classList.add('active');
-}
-
-function gameLoop() {
-    if (!GAME.active || GAME.bossFightActive) return;
-    // Mover bots aleatoriamente
-    for (let b in BOTS) {
-        if (Math.random() > 0.6) {
-            let idx = BOTS[b].path.indexOf(BOTS[b].pos);
-            if (idx < BOTS[b].path.length - 1) BOTS[b].pos = BOTS[b].path[idx + 1];
-        }
-    }
-    checkAttacks();
-}
-
-function checkAttacks() {
-    if (BOTS.stalnoy.pos === 100 && !GAME.doorClosed) triggerJumpscare('stalnoy');
-    if (BOTS.prizrak.pos === 100 && !GAME.maskOn) triggerJumpscare('prizrak');
-}
-
-function startBossSequence() {
-    GAME.bossFightActive = true;
-    // Efecto de Stalnoy corriendo y rompiendo el vidrio
-    setTimeout(() => {
-        document.getElementById('office-bg').style.backgroundImage = "url('assets/images/oficina_rota.jpg')";
-        document.body.classList.add('alarm-mode');
-        document.getElementById('btn-emp').classList.remove('hidden');
-        document.getElementById('enemy-layer').innerHTML = '<img src="assets/images/sprites/tanque_boss.png" style="width:70%;">';
-    }, 4000);
-}
-
-function triggerJumpscare(bot) {
-    GAME.active = false;
-    const sc = document.getElementById('jumpscare-screen');
-    sc.classList.remove('hidden');
-    document.getElementById('jumpscare-img').src = `assets/images/sprites/${bot}_scare.gif`;
-    setTimeout(() => location.reload(), 3000);
-}
-
-// Eventos de botones
-document.getElementById('btn-mask').onclick = () => {
-    GAME.maskOn = !GAME.maskOn;
-    document.getElementById('mask-overlay').classList.toggle('hidden');
-};
-document.getElementById('btn-door').onclick = () => {
+function toggleDoor() {
     GAME.doorClosed = !GAME.doorClosed;
-    document.getElementById('btn-door').innerText = GAME.doorClosed ? "CERRADA" : "ABIERTA";
-};
+    document.getElementById('btn-door').innerText = GAME.doorClosed ? "🚪 PUERTA: CERRADA" : "🚪 PUERTA: ABIERTA";
+}
+
+function toggleMask() {
+    GAME.maskOn = !GAME.maskOn;
+    document.getElementById('btn-mask').style.background = GAME.maskOn ? "#0f0" : "#222";
+}
+
+function endGame(msg) { GAME.active = false; alert(msg); location.reload(); }
