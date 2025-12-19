@@ -11,7 +11,7 @@
     <div id="start-screen">
         <h1 class="glitch">OPERACIÓN SOMBRA</h1>
         <div id="night-menu"></div>
-        <button onclick="resetProgress()" style="margin-top:20px; font-size:10px; border-color:#333; color:#555; background:none; cursor:pointer;">RESETEAR PROGRESO</button>
+        <button id="btn-reset" style="margin-top:20px; font-size:10px; border:1px solid #333; color:#555; background:none;">RESETEAR PROGRESO</button>
     </div>
 
     <div id="game-container" class="hidden">
@@ -27,11 +27,8 @@
         </div>
 
         <div id="office-bg"></div>
-        
         <div id="mask-overlay" class="hidden"></div>
-        <div id="oxygen-alert" class="hidden">
-            <p>⚠️ ERROR: FALLO DE OXÍGENO ⚠️</p>
-        </div>
+        <div id="oxygen-alert" class="hidden"><p>⚠️ FALLO DE OXÍGENO ⚠️</p></div>
 
         <div id="camera-monitor" class="hidden">
             <div id="cam-display">
@@ -40,12 +37,12 @@
                 <div id="cam-name">CCTV</div>
             </div>
             <div id="cam-buttons">
-                <button onclick="changeCam(1)">CAM 1</button>
-                <button onclick="changeCam(2)">CAM 2</button>
-                <button onclick="changeCam(3)">CAM 3</button>
-                <button onclick="changeCam(4)">CAM 4</button>
-                <button onclick="changeCam(5)">CAM 5</button>
-                <button onclick="toggleMonitor()" style="background:#400;">BAJAR</button>
+                <button class="cam-btn" data-cam="1">CAM 1</button>
+                <button class="cam-btn" data-cam="2">CAM 2</button>
+                <button class="cam-btn" data-cam="3">CAM 3</button>
+                <button class="cam-btn" data-cam="4">CAM 4</button>
+                <button class="cam-btn" data-cam="5">CAM 5</button>
+                <button id="btn-cam-close" style="background:#400;">BAJAR</button>
             </div>
         </div>
 
@@ -60,12 +57,12 @@
 
     <div id="game-over-screen" class="hidden">
         <h2 id="death-reason">SISTEMA CORRUPTO</h2>
-        <button onclick="retryNight()" id="btn-retry">REINTENTAR</button>
+        <button id="btn-retry">REINTENTAR</button>
     </div>
 
     <div id="win-screen" class="hidden">
-        <h2 style="color: #0f0; text-shadow: 0 0 15px #0f0;">¡GANASTE!</h2>
-        <button onclick="location.reload()" id="btn-next">SIGUIENTE NOCHE</button>
+        <h2 style="color: #0f0;">¡GANASTE!</h2>
+        <button id="btn-next">VOLVER</button>
     </div>
 
     <script src="script.js"></script>
