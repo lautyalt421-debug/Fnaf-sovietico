@@ -1,42 +1,33 @@
-* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-body { background: #1a1a1a; color: #cccccc; font-family: 'Trebuchet MS', sans-serif; overflow: hidden; height: 100vh; }
+* { margin: 0; padding: 0; box-sizing: border-box; outline: none; }
+body { background: #000; color: #fff; font-family: 'Courier New', monospace; height: 100vh; overflow: hidden; }
 .hidden { display: none !important; }
 
-/* Menú Búnker */
-#start-screen { height: 100vh; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, #222, #000); }
-.menu-box { text-align: center; width: 90%; border: 4px double #8B0000; padding: 25px; background: rgba(10, 10, 10, 0.9); box-shadow: inset 0 0 30px #000; }
-h1.glitch { color: #8B0000; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px; font-weight: 900; }
-#night-menu { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 20px 0; }
-#night-menu button { padding: 15px; background: #2a2a2a; border: 2px solid #444; color: #FFD700; font-family: monospace; font-weight: bold; }
-#btn-reset { background: transparent; border: none; color: #555; text-decoration: underline; font-size: 0.8rem; cursor: pointer; }
+/* Efecto de Estática Real */
+#static-layer {
+    position: absolute; inset: 0;
+    background: url('assets/images/static.gif'); /* Asegúrate de tener este gif */
+    opacity: 0; pointer-events: none; z-index: 5;
+    transition: opacity 0.1s;
+}
+.active-static { opacity: 0.8 !important; }
 
-/* HUD Superior */
-#top-bar { position: absolute; top: 0; width: 100%; padding: 12px; display: flex; justify-content: space-between; background: linear-gradient(to bottom, #333, #111); border-bottom: 3px solid #000; z-index: 100; color: #FFD700; font-family: monospace; }
+/* Evitar que se corten los botones */
+#ui-panel {
+    height: 12vh; width: 100%; display: flex; gap: 5px; padding: 5px;
+    background: #111; border-top: 2px solid #8B0000;
+}
+.action-btn { flex: 1; height: 100%; font-size: 0.7rem; background: #222; border: 2px solid #444; color: #fff; }
+.active-btn { background: #8B0000 !important; border-color: #f00 !important; }
 
-/* Oficina */
-#game-container { position: relative; height: 100vh; display: flex; flex-direction: column; }
-#office-bg { flex: 1; background-size: cover; background-position: center; transition: filter 0.1s; }
-
-/* Botonera Inferior Estilo Consola */
-#ui-panel { height: 15vh; width: 100%; display: flex; gap: 8px; padding: 10px; background: #222; border-top: 4px solid #111; }
-.action-btn { flex: 1; background: #333; border: 3px outset #555; color: #ddd; font-weight: bold; font-size: 0.8rem; border-radius: 2px; text-transform: uppercase; }
-.active-btn { background: #8B0000 !important; color: white !important; border-style: inset; box-shadow: 0 0 10px #f00; }
-#btn-door { border-color: #8B0000; }
-#btn-mask { border-color: #FFD700; }
-
-/* Monitor CRT */
-#camera-monitor { position: fixed; inset: 0; z-index: 2000; background: #050505; display: flex; flex-direction: column; }
-#cam-viewport { flex: 1.8; position: relative; border: 12px solid #2a2a2a; overflow: hidden; }
+/* Cámara Proporcional */
+#cam-viewport { 
+    height: 50vh; background: #000; position: relative; 
+    border-bottom: 2px solid #8B0000;
+}
 #cam-img { width: 100%; height: 100%; object-fit: contain; }
-#static-layer { position: absolute; inset: 0; background: url('assets/images/estatica.gif'); opacity: 0.2; pointer-events: none; }
-#cam-controls { flex: 1; display: flex; flex-direction: column; padding: 12px; gap: 10px; background: #111; }
-.cam-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; flex: 1; }
-.cam-btn { background: #222; border: 2px solid #8B0000; color: #FFD700; font-weight: bold; }
-#btn-cam-close { height: 50px; background: #400; color: #fff; border: none; font-weight: bold; text-transform: uppercase; }
+#cam-label { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.7); padding: 5px; color: #ffd700; font-size: 0.8rem; }
 
-/* Alertas */
-#oxygen-alert { position: fixed; top: 25%; width: 100%; text-align: center; color: #fff; background: #8B0000; padding: 10px; font-weight: bold; z-index: 3000; animation: blink 0.5s infinite; }
-@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
-#mask-overlay { position: fixed; inset: 0; z-index: 500; border: 40px solid #000; background: radial-gradient(transparent, #000); pointer-events: none; }
-#jumpscare-container { position: fixed; inset: 0; z-index: 9999; background: #000; }
-#jumpscare-img { width: 100%; height: 100%; object-fit: cover; }
+#cam-controls { height: 38vh; padding: 10px; display: flex; flex-direction: column; gap: 10px; }
+.cam-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.cam-btn { padding: 15px; background: #222; border: 1px solid #8B0000; color: #fff; font-weight: bold; }
+#btn-cam-close { width: 100%; padding: 15px; background: #8B0000; border: none; color: #fff; font-weight: bold; }
