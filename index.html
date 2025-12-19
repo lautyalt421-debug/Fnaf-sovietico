@@ -7,35 +7,31 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
     <div id="start-screen">
         <h1 class="glitch">OPERACIÓN SOMBRA</h1>
-        <div id="night-menu">
-            <button onclick="startGame(1)">NOCHE 1</button>
-            <button onclick="startGame(2)">NOCHE 2</button>
-            <button onclick="startGame(3)">NOCHE 3</button>
-            <button onclick="startGame(4)">NOCHE 4</button>
-            <button onclick="startGame(5)" style="color:#f00">JEFE: MOLOT</button>
-            <button onclick="startGame(6)" style="border-color:#f00">MODO 6</button>
-        </div>
+        <div id="night-menu"></div>
+        <button onclick="resetProgress()" style="margin-top:20px; font-size:10px; border-color:#333; color:#555;">RESETEAR DATOS</button>
     </div>
 
     <div id="game-container" class="hidden">
         <div id="top-bar">
             <div id="clock">12:00 AM</div>
-            <div id="power-box">
-                BAT: <span id="power-num">100</span>%
-                <div id="power-bar"><div id="power-fill"></div></div>
+            <div id="power-info">
+                <div id="usage-bars">USO: <span id="usage-visual">[I]</span></div>
+                <div id="power-box">
+                    BAT: <span id="power-num">100</span>%
+                    <div id="power-bar"><div id="power-fill"></div></div>
+                </div>
             </div>
         </div>
 
         <div id="office-bg"></div>
+        <div id="mask-overlay" class="hidden"></div>
 
         <div id="camera-monitor" class="hidden">
             <div id="cam-display">
                 <img id="cam-img" src="assets/images/muelle.jpg">
-                <div class="noise-overlay"></div>
-                <div class="scanlines"></div>
+                <div id="static-layer" class="noise-overlay"></div>
                 <div id="cam-name">CCTV: MUELLE</div>
             </div>
             <div id="cam-buttons">
@@ -44,17 +40,16 @@
                 <button onclick="changeCam(3)">CAM 3</button>
                 <button onclick="changeCam(4)">CAM 4</button>
                 <button onclick="changeCam(5)">CAM 5</button>
-                <button onclick="toggleMonitor()" class="btn-danger">BAJAR</button>
+                <button onclick="toggleMonitor()" style="background:#400;">BAJAR</button>
             </div>
         </div>
 
         <div id="ui-panel">
-            <button onclick="toggleMask()" id="btn-mask">🎭 MÁSCARA</button>
-            <button onclick="toggleMonitor()">🖥️ CÁMARAS</button>
-            <button onclick="toggleDoor()" id="btn-door">🚪 PUERTA</button>
+            <button id="btn-mask">🎭 MÁSCARA</button>
+            <button id="btn-monitor">🖥️ CÁMARAS</button>
+            <button id="btn-door">🚪 PUERTA</button>
         </div>
     </div>
-
     <script src="script.js"></script>
 </body>
 </html>
