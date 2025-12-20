@@ -3,62 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SISTEMA SOMBRA</title>
+    <title>SIN CORE: 1996</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="start-screen">
-        <div class="terminal">
-            <h1 class="glitch">OPERACIÓN SOMBRA</h1>
-            <div class="night-menu">
-                <button onclick="game.start(1)">OPERACIÓN 1</button>
-                <button onclick="game.start(2)">OPERACIÓN 2</button>
-                <button onclick="game.start(3)">OPERACIÓN 3</button>
-                <button onclick="game.start(4)">OPERACIÓN 4</button>
-                <button onclick="game.start(5)">OPERACIÓN 5</button>
-            </div>
-            <p style="margin-top:20px; color:#555;">SISTEMA DE VIGILANCIA V4.5</p>
-        </div>
+    <div id="crt-static" class="static-overlay"></div>
+
+    <audio id="snd-switch" src="assets/sounds/switch.mp3"></audio>
+    <audio id="snd-metal" src="assets/sounds/metal_thump.mp3"></audio>
+    <audio id="snd-static" src="assets/sounds/static.mp3" loop></audio>
+    <audio id="snd-scream" src="assets/sounds/scream.mp3"></audio>
+
+    <div id="screen-menu" class="screen">
+        <h1 class="glitch">SIN CORE</h1>
+        <div id="night-selector"></div>
     </div>
 
-    <div id="game-ui" class="hidden">
-        <div id="scanlines"></div>
-        <div id="top-bar">
-            <span>HORA: <b id="clock">12:00 AM</b></span>
-            <span>BATERÍA: <b id="power">100%</b></span>
-        </div>
-
-        <div id="main-viewport">
-            <div id="office-img"></div>
-            <div id="static-overlay"></div>
-        </div>
-
-        <div id="monitor-layer" class="hidden">
-            <div id="cam-window">
-                <div id="cam-info">
-                    <span id="cam-label">CAM 01 - MUELLE</span>
-                    <span class="rec">● REC</span>
+    <div id="screen-game" class="screen hidden">
+        <div class="hud">
+            <div class="info-row">
+                <span id="reloj">12:00 AM</span>
+                <span id="noche-txt">NOCHE 1</span>
+            </div>
+            <div class="power-row">
+                <span>ENERGÍA: <span id="power-percent">100</span>%</span>
+                <div id="uso-bars">
+                    <div class="bar" id="b1"></div>
+                    <div class="bar" id="b2"></div>
+                    <div class="bar" id="b3"></div>
                 </div>
-                <img id="cam-img" src="">
-            </div>
-            <div id="cam-grid">
-                <button onclick="game.switchCam(1)">C1</button>
-                <button onclick="game.switchCam(2)">C2</button>
-                <button onclick="game.switchCam(3)">C3</button>
-                <button onclick="game.switchCam(4)">C4</button>
-                <button onclick="game.switchCam(5)">C5</button>
-                <button id="btn-close" onclick="game.toggleMonitor()">VOLVER</button>
             </div>
         </div>
-
-        <div id="bottom-panel">
-            <button id="btn-mask" onclick="game.toggleMask()">MÁSCARA</button>
-            <button id="btn-monitor" onclick="game.toggleMonitor()">CÁMARAS</button>
-            <button id="btn-door" onclick="game.toggleDoor()">PUERTA</button>
+        <img id="main-view" src="assets/oficina/oficina_00.jpg">
+        <div class="office-ui">
+            <button class="btn-def" onclick="controlDefensa('puerta')">PUERTA</button>
+            <button class="btn-def" onclick="controlDefensa('ducto')">DUCTO</button>
+            <button class="btn-monitor" onclick="abrirMonitor()">SISTEMA DE CÁMARAS</button>
         </div>
     </div>
 
-    <div id="jumpscare-layer" class="hidden"><img id="scare-img" src=""></div>
+    <div id="monitor-overlay" class="hidden">
+        <div class="monitor-header">
+            <span id="cam-name">CAM 01</span>
+            <button class="btn-exit" onclick="cerrarMonitor()">VOLVER</button>
+        </div>
+        <img id="cam-view" src="">
+        <div class="cam-grid">
+            <button onclick="cambiarCam('cam01')">01</button>
+            <button onclick="cambiarCam('cam02')">02</button>
+            <button onclick="cambiarCam('cam03')">03</button>
+            <button onclick="cambiarCam('cam04')">04</button>
+            <button onclick="cambiarCam('cam05')">05</button>
+            <button onclick="cambiarCam('cam06')">06</button>
+            <button onclick="cambiarCam('cam07')">07</button>
+            <button onclick="cambiarCam('cam08')">08</button>
+        </div>
+    </div>
+
+    <div id="screen-death" class="screen hidden gray">
+        <h1 id="death-msg">CONEXIÓN PERDIDA</h1>
+        <button onclick="location.reload()">REBOOT SYSTEM</button>
+    </div>
+    <div id="screen-win" class="screen hidden">
+        <h1 class="win-txt">06:00 AM</h1>
+        <button onclick="location.reload()">SIGUIENTE TURNO</button>
+    </div>
+
     <script src="script.js"></script>
 </body>
 </html>
